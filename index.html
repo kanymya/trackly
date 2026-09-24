@@ -1,0 +1,1481 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Trackly - Homeschool Tracking &amp; Compliance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          aubergine: { DEFAULT: "#3B1F2B", dark: "#25121B", light: "#5A3445" },
+          biscuit: { DEFAULT: "#C89B53", light: "#E3BE7E", soft: "#FAF0E1", dark: "#9C7330" },
+          parchment: { DEFAULT: "#FAF5EE", surface: "#FFFDF9", border: "#E9DFD3", muted: "#7A6870" }
+        },
+        fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #EDE4D8; color: #2A1821; }
+  .screen-view { display: none; }
+  .screen-view.active { display: block; }
+  .academic-card { background: #FFFFFF; border: 1px solid #E9DFD3; border-radius: 1rem; box-shadow: 0 2px 8px -2px rgba(59, 31, 43, 0.05); }
+  .event-bar { font-size: 8.5px; font-weight: 700; line-height: 1.2; padding: 2px 4px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .no-select-arrow { -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; background-image: none !important; }
+  .no-select-arrow::-ms-expand { display: none !important; }
+</style>
+<meta content="web_standard" name="shell-type">
+</head>
+<body class="flex justify-center min-h-screen py-0 md:py-6 select-none sm:select-auto">
+<div class="w-full max-w-[430px] min-h-screen md:min-h-[860px] bg-[#FAF5EE] shadow-2xl relative flex flex-col md:rounded-[28px] overflow-hidden border border-[#E0D5C7]">
+  <!-- ================= TOP HEADER ================= -->
+  <header class="sticky top-0 z-30 bg-[#FAF5EE]/95 backdrop-blur-md border-b border-[#E9DFD3] px-3.5 py-2.5 flex items-center justify-between hidden" id="main-top-header">
+    <div class="flex items-center space-x-1.5">
+      <button class="flex items-center justify-center h-8 hover:opacity-85 transition" onclick="navigateTo('calendar')" title="Trackly Home">
+        <img alt="Trackly Logo" class="h-8 w-auto object-contain rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEoPhyP-nwRkjW9w08DVa9cPUWjZUqiCLq6UoTO6cSgdUR2zSaU3Xa6cyZRebuaY7rsqp4b50qNKgT1F1DU1nR7emBIrSWSRDdv251_-TrXAzivMTASEok9pSi0maSxJSQUd4Vbc5wBdlO9oXsd9EWNJxIdnpNjpVmNArgw-Xs_AEw9QN5ukodaFrCD9OLEDRviKPlZAi1TItxdH70s1VmZxSmdegoAPO2Gi378VrW2mMD2ZeenL2kVWNBWCQD9Ng27Q">
+      </button>
+      <button aria-label="Open Menu" class="p-1.5 rounded-xl text-[#3B1F2B] hover:bg-[#F2E8DB] transition ml-1" onclick="toggleMenu()">
+        <svg class="w-5 h-5 stroke-[2.4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </button>
+    </div>
+    <!-- Student Switcher Pill (Arrowless) -->
+    <div class="flex items-center px-4 py-1.5 bg-[#FFFDF9] border border-[#E0D5C7] rounded-full shadow-sm hover:border-[#C89B53] transition">
+      <select id="global-student-select" class="no-select-arrow bg-transparent font-bold text-xs text-[#3B1F2B] outline-none cursor-pointer text-center border-none p-0 focus:ring-0 leading-none" onchange="switchStudent(this.value)"><option value="" class="">No Students Added</option></select>
+    </div>
+    <!-- State Compliance Badge & Parent Avatar -->
+    <div class="flex items-center space-x-2">
+      <button class="px-2 py-1 rounded-lg bg-[#FAF0E1] border border-[#E5CCA0] text-[#9C7330] text-[11px] font-extrabold flex items-center space-x-1 hover:bg-[#F2E8DB] transition" onclick="navigateTo('attendance')">
+        <span class="">⚖️</span><span id="badge-state-abbr" class="">MO</span>
+      </button>
+      <button class="w-8 h-8 rounded-full bg-[#3B1F2B] text-[#FAF5EE] flex items-center justify-center text-xs font-bold ring-2 ring-[#C89B53]/40 shadow-sm" onclick="navigateTo('profile')">SC</button>
+    </div>
+  </header>
+  <!-- ================= NAVIGATION DRAWER ================= -->
+  <div id="drawer-backdrop" class="hidden fixed inset-0 bg-black/45 z-40 backdrop-blur-[2px]" onclick="toggleMenu()"></div>
+  <div id="side-drawer" class="fixed top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-[#FAF5EE] border-r border-[#E0D5C7] z-50 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <div class="p-4 border-b border-[#E9DFD3] flex items-center justify-between bg-[#FFFDF9]">
+      <div class="flex items-center space-x-2.5">
+        <img alt="Trackly Logo" class="h-9 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEoPhyP-nwRkjW9w08DVa9cPUWjZUqiCLq6UoTO6cSgdUR2zSaU3Xa6cyZRebuaY7rsqp4b50qNKgT1F1DU1nR7emBIrSWSRDdv251_-TrXAzivMTASEok9pSi0maSxJSQUd4Vbc5wBdlO9oXsd9EWNJxIdnpNjpVmNArgw-Xs_AEw9QN5ukodaFrCD9OLEDRviKPlZAi1TItxdH70s1VmZxSmdegoAPO2Gi378VrW2mMD2ZeenL2kVWNBWCQD9Ng27Q">
+        <div>
+          <h2 class="font-bold text-sm text-[#3B1F2B]">Trackly</h2>
+          <span class="text-[10px] text-[#C89B53] font-semibold uppercase">Academic Heritage</span>
+        </div>
+      </div>
+      <button class="p-1.5 text-[#7A6870]" onclick="toggleMenu()">✕</button>
+    </div>
+    <nav class="flex-1 overflow-y-auto p-3 space-y-1">
+      <button class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-[#3B1F2B] hover:bg-[#FFFDF9]" onclick="navAndClose('calendar')"><span class="">📅</span><span class="">Calendar &amp; Daily Log</span></button>
+      <button class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-[#3B1F2B] hover:bg-[#FFFDF9]" onclick="navAndClose('work-samples')"><span class="">🎨</span><span class="">Student Work &amp; Portfolio</span></button>
+      <button class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-[#3B1F2B] hover:bg-[#FFFDF9]" onclick="navAndClose('report-card')"><span class="">📑</span><span class="">Official Report Card</span></button>
+      <button class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-[#3B1F2B] hover:bg-[#FFFDF9]" onclick="navAndClose('resources')"><span class="">📚</span><span class="">Reading Log</span></button>
+      <button class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-[#3B1F2B] hover:bg-[#FFFDF9]" onclick="navAndClose('field-trips')"><span class="">📍</span><span class="">Field Trips</span></button>
+      <button class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-[#3B1F2B] hover:bg-[#FFFDF9]" onclick="navAndClose('attendance')"><span class="">⚖️</span><span class="">Attendance &amp; Compliance</span></button>
+      <div class="border-t border-[#E9DFD3] my-2 pt-2"></div>
+      <button class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-[#3B1F2B] hover:bg-[#FFFDF9]" onclick="navAndClose('profile')"><span class="">⚙️</span><span class="">Profile &amp; Settings</span></button>
+    </nav>
+  </div>
+  <!-- ================= MAIN VIEWS ================= -->
+  <main class="flex-1 overflow-y-auto pb-16"><section id="screen-auth-gate" class="screen-view active p-4 space-y-4"><div class="academic-card p-5 space-y-4 bg-white border border-[#E0D5C7] shadow-sm"><div class="flex flex-col items-center text-center space-y-2 pb-3 border-b border-[#E9DFD3]"><div class="w-20 h-20 bg-[#FAF5EE] rounded-2xl border border-[#E0D5C7] p-2 shadow-sm flex items-center justify-center"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUXWxiCvywGjtIe50z-hidlqx89r88g9cgiMLwGmRZ59BeP7GmVp6KyEEuFI2S8wOG2dmW-xUojP3TysJ70sTth5p3ZTV9BYvNoGe5Rw5J769FD58GdB0oYDOJ7QhoNS58xS3xagQYSYKCdcZqKtL9S3hI0OBD2InsT3OGWDFBcBj2kpbhOWeYJqejYLzuYqWKQc0kq1epFe_46Yk9Q5kFvSLusT1im3-eqluxuvNzyzsxnY3VIPXChsKOzR6V_cag0g" alt="Trackly Homeschool Ledger" class="w-full h-full object-contain"></div><div class="space-y-0.5"><h1 class="font-extrabold text-lg text-[#3B1F2B] tracking-tight">Trackly</h1><p class="text-xs font-semibold text-[#9C7330]">Private, Encrypted Homeschool Record-Keeping</p></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF0E1] border border-[#E5CCA0] rounded-full text-[10px] font-extrabold text-[#9C7330]"><span class="material-symbols-outlined text-[14px]">lock</span><span class="">AES-256 Cloud Vault Encryption</span></div></div><div class="grid grid-cols-2 gap-1 bg-[#FAF5EE] border border-[#E9DFD3] p-1 rounded-xl text-xs font-bold"><button id="btn-auth-signup" type="button" class="py-2 rounded-lg bg-[#3B1F2B] text-white shadow-sm transition text-center text-[11px]" onclick="switchAuthMode('signup')">Create Private Account</button><button id="btn-auth-signin" type="button" class="py-2 rounded-lg text-[#7A6870] hover:text-[#3B1F2B] transition text-center text-[11px]" onclick="switchAuthMode('signin')">Sign In to Existing Vault</button></div><div class="space-y-3"><button type="button" class="w-full py-2.5 px-3 bg-white border border-[#E0D5C7] hover:border-[#C89B53] rounded-xl text-xs font-bold text-[#3B1F2B] flex items-center justify-center gap-2.5 transition shadow-sm hover:bg-[#FAF5EE]" onclick="completeAuthWithProvider('Google')"><svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"></path><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.32 24 12 24z"></path><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12s.46 3.84 1.26 5.42l4.02-3.15z"></path><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"></path></svg><span class="">Continue with Google</span></button><div class="flex items-center gap-2 text-[10px] text-[#7A6870]"><div class="flex-1 border-t border-[#E9DFD3]"></div><span class="uppercase tracking-wider font-semibold">Or with secure email</span><div class="flex-1 border-t border-[#E9DFD3]"></div></div><div class="space-y-2.5"><div class="space-y-1"><label class="block text-xs font-bold text-[#3B1F2B]">Parent Educator Email</label><div class="relative flex items-center"><input id="auth-email-input" type="email" value="" placeholder="parent@example.com" class="w-full p-2.5 pl-8 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl text-xs font-bold text-[#3B1F2B] focus:outline-none focus:border-[#C89B53]"><span class="material-symbols-outlined text-[16px] text-[#7A6870] absolute left-2.5 pointer-events-none">mail</span></div></div><div class="space-y-1"><div class="flex justify-between items-center"><label class="block text-xs font-bold text-[#3B1F2B]">Vault Password</label><span id="auth-forgot-link" class="text-[10px] font-bold text-[#C89B53] hover:underline cursor-pointer hidden" onclick="alert('Password reset link sent to your registered parent educator email.')">Forgot?</span></div><div class="relative flex items-center"><input id="auth-password-input" type="password" value="" placeholder="••••••••••••" class="w-full p-2.5 pl-8 pr-9 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl text-xs font-bold text-[#3B1F2B] focus:outline-none focus:border-[#C89B53]"><span class="material-symbols-outlined text-[16px] text-[#7A6870] absolute left-2.5 pointer-events-none">key</span><button type="button" class="absolute right-2.5 text-[#7A6870] hover:text-[#3B1F2B]" onclick="toggleAuthPasswordVisibility()"><span id="auth-eye-icon" class="material-symbols-outlined text-[18px]">visibility</span></button></div></div><div id="auth-terms-wrapper" class="flex items-start gap-2 pt-1"><input type="checkbox" id="auth-terms-check" checked="" class="mt-0.5 rounded border-[#E0D5C7] text-[#C89B53] focus:ring-0 cursor-pointer"><label for="auth-terms-check" class="text-[10px] text-[#7A6870] leading-snug cursor-pointer">I agree to Trackly's <a href="#" class="text-[#9C7330] font-bold underline" onclick="event.preventDefault(); alert('Terms of Service: Full FERPA &amp; COPPA compliant local recordkeeping agreement.');">Terms of Service</a> &amp; <a href="#" class="text-[#9C7330] font-bold underline" onclick="event.preventDefault(); alert('Privacy Notice: Zero data monetization, zero third-party ads, zero tracking pixels.');">Privacy Policy</a>.</label></div><button id="btn-submit-auth" type="button" class="w-full py-2.5 bg-[#3B1F2B] text-white font-bold text-xs rounded-xl shadow-md hover:opacity-95 transition flex items-center justify-center gap-2" onclick="submitEmailAuth()"><span class="material-symbols-outlined text-[16px]">lock_open</span><span id="auth-submit-text" class="">Create Encrypted Vault</span></button><div id="auth-status-toast" class="hidden p-2 rounded-xl bg-[#FAF0E1] border border-[#E5CCA0] text-[#9C7330] text-[11px] font-bold text-center transition"></div></div></div><div class="p-3 bg-[#FAF5EE] border border-[#E9DFD3] rounded-xl space-y-2"><div class="flex items-center gap-1.5 text-xs font-extrabold text-[#3B1F2B]"><span class="material-symbols-outlined text-[16px] text-[#C89B53]">verified_user</span><span class="">Zero-Knowledge Family Privacy Architecture</span></div><p class="text-[10px] text-[#7A6870] leading-relaxed">Your children's academic logs, portfolio photos, grades, and field trips are client-encrypted. They are strictly accessible only via your authenticated parent keys.</p><div class="flex flex-wrap gap-1.5 pt-1"><span class="text-[9px] font-bold px-2 py-0.5 bg-[#FFFDF9] border border-[#E0D5C7] text-[#7A6870] rounded-full">FERPA &amp; COPPA Safe</span><span class="text-[9px] font-bold px-2 py-0.5 bg-[#FFFDF9] border border-[#E0D5C7] text-[#7A6870] rounded-full">TLS 1.3 Transport</span><span class="text-[9px] font-bold px-2 py-0.5 bg-[#FFFDF9] border border-[#E0D5C7] text-[#7A6870] rounded-full">Zero Data Resale</span></div></div><div class="pt-1 border-t border-[#E9DFD3] flex flex-col items-center gap-1.5"><div class="w-full flex items-center justify-between text-[11px] font-bold text-[#7A6870] px-1"><span class="">Stage 1 of 3: Vault Authentication</span><span class="px-2 py-0.5 rounded bg-[#FAF0E1] text-[#9C7330] border border-[#E5CCA0] text-[10px]">Mandatory Gate</span></div><button type="button" class="w-full py-2.5 bg-[#FAF0E1] border border-[#E5CCA0] hover:bg-[#F2E8DB] rounded-xl text-xs font-bold text-[#9C7330] flex items-center justify-center gap-1.5 transition shadow-sm" onclick="advanceToStage2()"><span class="material-symbols-outlined text-[16px]">lock_open</span><span class="">Authenticate &amp; Launch Setup Wizard</span></button><button type="button" class="text-[11px] font-bold text-[#7A6870] hover:text-[#3B1F2B] hover:underline flex items-center gap-1" onclick="advanceToStage2()"><span class="material-symbols-outlined text-[14px]">arrow_forward</span><span class="">Continue with Verified Credentials</span></button></div></div></section><section id="view-onboarding" class="screen-view p-4 space-y-4"><div class="academic-card p-5 space-y-4 bg-white border border-[#E0D5C7] shadow-sm"><div class="text-center space-y-1.5 pb-2 border-b border-[#E9DFD3]"><div class="inline-flex items-center gap-1 px-2.5 py-0.5 mb-1 rounded-full bg-[#FAF0E1] border border-[#E5CCA0] text-[10px] font-extrabold text-[#9C7330]"><span class="material-symbols-outlined text-[12px]">looks_two</span><span class="">Stage 2 of 3: Mandatory Homeschool Setup</span></div><div class="w-12 h-12 rounded-2xl bg-[#FAF0E1] border border-[#E5CCA0] text-[#9C7330] flex items-center justify-center text-2xl mx-auto shadow-sm">🏫</div><h2 class="font-extrabold text-base text-[#3B1F2B]">Master Homeschool Setup</h2><p class="text-xs text-[#7A6870]">Configure your family academy, legal jurisdiction, and children roster.</p></div><div class="space-y-3"><div><label class="block text-xs font-bold text-[#3B1F2B] mb-1">Homeschool / Academy Name</label><input id="ob-school-name" type="text" value="Oakwood Heritage Academy" placeholder="e.g. Oakwood Academy" class="w-full p-2.5 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl text-xs font-bold text-[#3B1F2B] focus:outline-none focus:border-[#C89B53]"></div><div><label class="block text-xs font-bold text-[#3B1F2B] mb-1">Parent Educator Name</label><input id="ob-parent-name" type="text" value="Sarah Connolly" placeholder="e.g. Sarah Connolly" class="w-full p-2.5 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl text-xs font-bold text-[#3B1F2B] focus:outline-none focus:border-[#C89B53]"></div><div><label class="block text-xs font-bold text-[#3B1F2B] mb-1">Primary Legal Jurisdiction (U.S. State)</label><select id="ob-state-select" class="w-full p-2.5 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl text-xs font-bold text-[#3B1F2B] outline-none cursor-pointer focus:border-[#C89B53]"><option value="AL" class="">Alabama (180 Days)</option><option value="AK" class="">Alaska (180 Days)</option><option value="AZ" class="">Arizona (Standard Exemption)</option><option value="AR" class="">Arkansas (178 Days)</option><option value="CA" class="">California (175 Days)</option><option value="CO" class="">Colorado (684 Hours)</option><option value="CT" class="">Connecticut (Exempt Recordkeeping)</option><option value="DE" class="">Delaware (Exempt Recordkeeping)</option><option value="DC" class="">District of Columbia (180 Days)</option><option value="FL" class="">Florida (Portfolio / Standard)</option><option value="GA" class="">Georgia (Dual: 180 Days &amp; 810 Hours)</option><option value="HI" class="">Hawaii (Exempt Standard)</option><option value="ID" class="">Idaho (Exempt Standard)</option><option value="IL" class="">Illinois (177 Days)</option><option value="IN" class="">Indiana (180 Days)</option><option value="IA" class="">Iowa (148 Days)</option><option value="KS" class="">Kansas (Dual: 186 Days &amp; 1,116 Hours)</option><option value="KY" class="">Kentucky (Dual: 185 Days &amp; 1,062 Hours)</option><option value="LA" class="">Louisiana (180 Days)</option><option value="ME" class="">Maine (175 Days)</option><option value="MD" class="">Maryland (180 Days)</option><option value="MA" class="">Massachusetts (Dual: 180 Days &amp; 900 Hours)</option><option value="MI" class="">Michigan (Exempt Standard)</option><option value="MN" class="">Minnesota (Exempt Standard)</option><option value="MS" class="">Mississippi (Exempt Standard)</option><option value="MO" selected="" class="">Missouri (1,000 Hours Statutory Rule)</option><option value="MT" class="">Montana (720 Hours)</option><option value="NE" class="">Nebraska (1,032 Hours)</option><option value="NV" class="">Nevada (180 Days)</option><option value="NH" class="">New Hampshire (180 Days)</option><option value="NJ" class="">New Jersey (Exempt Standard)</option><option value="NM" class="">New Mexico (180 Days)</option><option value="NY" class="">New York (Dual: 180 Days &amp; 900 Hours)</option><option value="NC" class="">North Carolina (180 Days)</option><option value="ND" class="">North Dakota (Dual: 175 Days &amp; 700 Hours)</option><option value="OH" class="">Ohio (900 Hours Rule)</option><option value="OK" class="">Oklahoma (Exempt Standard)</option><option value="OR" class="">Oregon (180 Days)</option><option value="PA" class="">Pennsylvania (Dual: 180 Days &amp; 900 Hours)</option><option value="RI" class="">Rhode Island (Dual: 180 Days &amp; 1,080 Hours)</option><option value="SC" class="">South Carolina (Dual: 180 Days &amp; 810 Hours)</option><option value="SD" class="">South Dakota (175 Days)</option><option value="TN" class="">Tennessee (Dual: 180 Days &amp; 720 Hours)</option><option value="TX" class="">Texas (Exempt / Family Standard)</option><option value="UT" class="">Utah (180 Days)</option><option value="VT" class="">Vermont (175 Days)</option><option value="VA" class="">Virginia (180 Days)</option><option value="WA" class="">Washington (180 Days)</option><option value="WV" class="">West Virginia (180 Days)</option><option value="WI" class="">Wisconsin (875 Hours)</option><option value="WY" class="">Wyoming (Exempt Standard)</option></select></div><div class="space-y-2 pt-2 border-t border-[#E9DFD3]"><div class="flex items-center justify-between"><div class="flex items-center gap-1.5"><label class="text-xs font-bold text-[#3B1F2B]">Student Roster (Up to 4)</label><span id="ob-roster-count" class="text-[10px] text-[#9C7330] font-extrabold bg-[#FAF0E1] px-2 py-0.5 rounded-full border border-[#E5CCA0]">2 Children</span></div><button type="button" id="btn-ob-add-child" class="px-2.5 py-1 bg-[#FAF0E1] hover:bg-[#F2E8DB] text-[#9C7330] border border-[#E5CCA0] text-[11px] font-bold rounded-lg transition flex items-center gap-1" onclick="addObChild()" style="display: inline-flex;">+ Add Child</button></div><div id="ob-children-list" class="space-y-3"><div class="p-3 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl space-y-2"><div class="flex items-center justify-between"><span class="text-xs font-extrabold text-[#3B1F2B]">Child #1</span><button type="button" class="text-[10px] text-[#ba1a1a] font-bold hover:underline" onclick="removeObChild(0)">Remove</button></div><div class="grid grid-cols-2 gap-2"><div><label class="block text-[9px] font-bold text-[#7A6870] mb-0.5">Name</label><input type="text" value="Leo" class="w-full p-2 bg-white border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B]" oninput="obStateData.children[0].name = this.value"></div><div><label class="block text-[9px] font-bold text-[#7A6870] mb-0.5">Grade</label><input type="text" value="4th Grade" class="w-full p-2 bg-white border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B]" oninput="obStateData.children[0].grade = this.value"></div></div><div class="space-y-1 pt-1"><div class="flex items-center justify-between"><label class="block text-[9px] font-bold text-[#7A6870]">Assigned Subjects</label></div><div class="flex flex-wrap gap-1 mb-1.5"><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">Saxon Math 5/4</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(0,0)">×</button></span><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">Natural Science &amp; Biology</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(0,1)">×</button></span><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">Language Arts &amp; Lit</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(0,2)">×</button></span><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">US History</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(0,3)">×</button></span><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">Piano &amp; Music Theory</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(0,4)">×</button></span></div><div class="flex gap-1.5"><input id="ob-new-subj-input-0" type="text" placeholder="Add subject (e.g. Latin, Astronomy)" class="flex-1 p-1.5 bg-white border border-[#E0D5C7] rounded-lg text-[11px] font-semibold text-[#3B1F2B] outline-none"><button type="button" class="px-2.5 py-1 bg-[#3B1F2B] text-white rounded-lg text-[10px] font-bold hover:opacity-90" onclick="addObSubject(0)">+ Add</button></div></div></div><div class="p-3 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl space-y-2"><div class="flex items-center justify-between"><span class="text-xs font-extrabold text-[#3B1F2B]">Child #2</span><button type="button" class="text-[10px] text-[#ba1a1a] font-bold hover:underline" onclick="removeObChild(1)">Remove</button></div><div class="grid grid-cols-2 gap-2"><div><label class="block text-[9px] font-bold text-[#7A6870] mb-0.5">Name</label><input type="text" value="Maya" class="w-full p-2 bg-white border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B]" oninput="obStateData.children[1].name = this.value"></div><div><label class="block text-[9px] font-bold text-[#7A6870] mb-0.5">Grade</label><input type="text" value="1st Grade" class="w-full p-2 bg-white border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B]" oninput="obStateData.children[1].grade = this.value"></div></div><div class="space-y-1 pt-1"><div class="flex items-center justify-between"><label class="block text-[9px] font-bold text-[#7A6870]">Assigned Subjects</label></div><div class="flex flex-wrap gap-1 mb-1.5"><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">All About Reading Level 1</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(1,0)">×</button></span><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">Math-U-See Alpha</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(1,1)">×</button></span><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">Nature Study &amp; Sketching</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(1,2)">×</button></span><span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="">Creative Arts &amp; Crafts</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(1,3)">×</button></span></div><div class="flex gap-1.5"><input id="ob-new-subj-input-1" type="text" placeholder="Add subject (e.g. Latin, Astronomy)" class="flex-1 p-1.5 bg-white border border-[#E0D5C7] rounded-lg text-[11px] font-semibold text-[#3B1F2B] outline-none"><button type="button" class="px-2.5 py-1 bg-[#3B1F2B] text-white rounded-lg text-[10px] font-bold hover:opacity-90" onclick="addObSubject(1)">+ Add</button></div></div></div></div></div></div><div class="pt-2 space-y-2"><button type="button" id="btn-complete-setup" class="w-full py-3 bg-[#3B1F2B] text-white font-bold text-xs rounded-xl shadow-md hover:opacity-90 transition flex items-center justify-center gap-2" onclick="completeSetupAndLaunch()"><span class="material-symbols-outlined text-[16px]">task_alt</span><span class="">Complete Setup &amp; Enter Workspace</span></button><p class="text-center text-[10px] text-[#7A6870]"><div class="inline-flex items-center gap-1 px-2.5 py-0.5 mb-1 rounded-full bg-[#FAF0E1] border border-[#E5CCA0] text-[10px] font-extrabold text-[#9C7330]"><span class="material-symbols-outlined text-[12px]">looks_two</span><span class="">Stage 2 of 3: Mandatory Homeschool Setup</span></div>All data initializes the master application state and syncs to all modules.</p></div></div></section>
+    <!-- 1. CALENDAR VIEW -->
+    <section id="screen-calendar" class="screen-view p-4 space-y-4">
+      <!-- Statutory Progress Ribbon -->
+      <div class="academic-card p-3.5 flex flex-col gap-2.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 id="statute-quick-title" class="font-bold text-[#3B1F2B] text-xs leading-tight">Missouri Statutory Progress</h3>
+            <p id="statute-quick-sub" class="text-[11px] text-[#7A6870]">No student profile registered • Add student in Setup</p>
+          </div>
+          <button class="bg-[#FAF0E1] text-[#9C7330] border border-[#E5CCA0] px-2.5 py-1 rounded-full text-[11px] font-bold hover:bg-[#F2E8DB] transition" onclick="navigateTo('attendance')">
+            Audit Detail
+          </button>
+        </div>
+        <div id="statute-quick-bar-wrapper" class="w-full bg-[#FAF5EE] border border-[#E9DFD3] h-2 rounded-full overflow-hidden flex">
+          <div id="statute-progress-bar" class="bg-[#C89B53] h-full transition-all duration-500" style="width: 64%;"></div>
+        </div>
+      </div>
+      <!-- Calendar Controls -->
+      <div class="academic-card p-3 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <button class="w-7 h-7 rounded-lg bg-[#FAF5EE] border border-[#E9DFD3] flex items-center justify-center text-[#3B1F2B] font-bold hover:bg-[#F2E8DB]" onclick="navigateMonth(-1)">‹</button>
+            <select id="cal-month-select" class="bg-[#FAF5EE] border border-[#E9DFD3] text-[#3B1F2B] font-bold text-xs rounded-lg px-2 py-1 outline-none cursor-pointer" onchange="onMonthSelect(this.value)">
+              <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+              <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+              <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+              <option value="9" selected="">October</option><option value="10">November</option><option value="11">December</option>
+            </select>
+            <button class="w-7 h-7 rounded-lg bg-[#FAF5EE] border border-[#E9DFD3] flex items-center justify-center text-[#3B1F2B] font-bold hover:bg-[#F2E8DB]" onclick="navigateMonth(1)">›</button>
+          </div>
+          <div class="flex items-center bg-[#FAF5EE] border border-[#E9DFD3] p-0.5 rounded-lg text-xs font-bold">
+            <button id="btn-cal-day" class="px-2 py-1 rounded-md transition text-[#7A6870]" onclick="setCalView('day')">Day</button>
+            <button id="btn-cal-week" class="px-2 py-1 rounded-md transition text-[#7A6870]" onclick="setCalView('week')">Week</button>
+            <button id="btn-cal-month" class="px-2.5 py-1 rounded-md bg-[#3B1F2B] text-white shadow-sm transition" onclick="setCalView('month')">Month</button>
+          </div>
+        </div>
+        <!-- Month Grid View -->
+        <div id="cal-view-month" class="space-y-1.5">
+          <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-[#7A6870]">
+            <div class="">Su</div><div class="">Mo</div><div class="">Tu</div><div class="">We</div><div class="">Th</div><div class="">Fr</div><div class="">Sa</div>
+          </div>
+          <div id="month-grid-cells" class="grid grid-cols-7 gap-1"></div>
+        </div>
+        <!-- Week View -->
+        <div id="cal-view-week" class="hidden space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-bold text-[#7A6870]">
+            <span id="cal-week-hours-label" class="">10.5 hrs total</span>
+            <span id="cal-week-progress-text" class="">10.5 / 25 hrs (42%)</span>
+          </div>
+          <div class="w-full bg-[#FAF5EE] border border-[#E9DFD3] h-1.5 rounded-full overflow-hidden">
+            <div id="cal-week-progress-bar" class="bg-[#C89B53] h-full transition-all duration-300" style="width: 42%;"></div>
+          </div>
+          <div id="cal-week-strip" class="grid grid-cols-7 gap-1"><div class="col-span-7 p-3 text-center text-xs text-[#7A6870] bg-[#FFFDF9] rounded-xl border border-[#E9DFD3]">No sessions recorded yet.</div></div>
+        </div>
+        <!-- Day View -->
+        <div id="cal-view-day" class="hidden space-y-2">
+          <div class="flex items-center justify-between py-1">
+            <h4 id="day-view-date-title" class="font-bold text-xs text-[#3B1F2B]">Oct 5, 2026</h4>
+            <span id="day-view-total-badge" class="bg-[#FAF0E1] border border-[#E5CCA0] text-[#9C7330] text-[10px] font-extrabold px-2 py-0.5 rounded-full">4.5 hrs</span>
+          </div>
+          <div id="day-view-timeline" class="space-y-2"><div class="p-4 text-center text-xs text-[#7A6870] bg-[#FFFDF9] rounded-xl border border-[#E9DFD3]"><p class="font-bold text-[#3B1F2B]">No sessions scheduled.</p><p class="text-[10px] mt-1 text-[#C89B53] font-bold cursor-pointer hover:underline" onclick="openModal('modal-log')">+ Log new session</p></div></div>
+        </div>
+      </div>
+      <!-- Active Day Sessions List -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 id="session-list-heading" class="font-bold text-xs text-[#3B1F2B]">Sessions (No Active Student)</h4>
+            <span id="session-hours-total" class="text-[11px] font-extrabold text-[#C89B53]">0.0 hrs</span>
+          </div>
+          <button class="bg-[#3B1F2B] text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm hover:opacity-95" onclick="document.getElementById('new-log-date').value = formatDate(App.selectedDateKey); openModal('modal-log')">
+            <span class="">+ Log Session</span>
+          </button>
+        </div>
+        <div id="dynamic-sessions-container" class="space-y-2"><div class="academic-card p-4 text-center text-xs text-[#7A6870] bg-[#FFFDF9]"><p class="font-bold text-[#3B1F2B]">No sessions logged yet.</p><p class="text-[10px] mt-1 text-[#C89B53] font-bold cursor-pointer hover:underline" onclick="openModal('modal-log')">+ Click here to log hours</p></div></div>
+      </div>
+    </section>
+    <!-- 2. STUDENT WORK & PORTFOLIO -->
+    <section id="screen-work-samples" class="screen-view p-4 space-y-4">
+      <div class="academic-card p-4 flex flex-col gap-1.5"><div class="flex items-center justify-between"><div><h2 class="font-bold text-sm text-[#3B1F2B]">Student Portfolio</h2><p id="portfolio-student-sub" class="text-xs text-[#7A6870]">No Active Student Selected</p></div><button class="bg-[#3B1F2B] text-white px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-sm hover:opacity-90" onclick="openModal('modal-upload-work')"><span class="">+ Add Piece</span></button></div><input type="file" id="portfolio-camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleDirectCameraUpload(event)"><div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#E9DFD3]"><button type="button" class="py-2 px-2.5 bg-[#FAF5EE] border border-[#E0D5C7] hover:border-[#C89B53] rounded-xl font-bold text-[11px] text-[#3B1F2B] flex items-center justify-center gap-1.5 transition shadow-sm" onclick="openModal('modal-upload-work'); document.getElementById('new-work-file-input').click();"><span class="material-symbols-outlined text-[16px] text-[#C89B53]">photo_library</span><span class="">Upload Gallery</span></button><button type="button" id="btn-portfolio-camera-trigger" class="py-2 px-2.5 bg-[#FAF0E1] border border-[#E5CCA0] hover:border-[#C89B53] rounded-xl font-bold text-[11px] text-[#9C7330] flex items-center justify-center gap-1.5 transition shadow-sm hover:bg-[#F2E8DB]" onclick="openCameraModal()"><span class="material-symbols-outlined text-[16px] text-[#C89B53]">photo_camera</span><span class="">Camera Viewfinder</span></button></div></div>
+      <!-- Subject Filter Chips -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold no-scrollbar" id="portfolio-filter-bar"><button class="port-filter-btn px-3 py-1 rounded-full bg-[#3B1F2B] text-white shadow-sm whitespace-nowrap" onclick="filterPortfolio('all', this)">All Subjects</button></div>
+      <!-- Portfolio Grid -->
+      <div id="portfolio-grid" class="grid grid-cols-2 gap-3"><div class="col-span-2 p-6 text-center text-xs text-[#7A6870] bg-[#FFFDF9] rounded-xl border border-[#E9DFD3]"><p class="font-bold text-[#3B1F2B]">No work samples recorded yet.</p><p class="text-[10px] mt-1 text-[#C89B53] font-bold">Use + Upload or Camera to add student work.</p></div></div>
+      <button id="portfolio-download-btn" class="w-full py-2.5 bg-[#C89B53] text-white font-bold text-xs rounded-xl shadow-sm hover:opacity-90 transition" onclick="alert('Exporting official academic portfolio PDF bundle.')">Download Complete Student Portfolio (PDF)</button>
+    </section>
+    <!-- 3. OFFICIAL REPORT CARD -->
+    <section id="screen-report-card" class="screen-view p-4 space-y-4">
+      <div class="academic-card p-4 space-y-3">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="text-[10px] text-[#C89B53] font-extrabold uppercase tracking-wider">Formal Academic Record</span>
+            <h2 class="font-bold text-sm text-[#3B1F2B]">Cumulative Transcript</h2>
+            <p id="report-card-sub" class="text-xs text-[#7A6870]">No Academy Registered • No Student Selected</p>
+          </div>
+          <div class="bg-[#FAF0E1] border border-[#E5CCA0] p-2 rounded-xl text-center min-w-[70px]">
+            <div class="text-[9px] font-bold text-[#9C7330]">CUM GPA</div>
+            <div id="report-gpa-val" class="text-base font-extrabold text-[#3B1F2B] leading-tight">0.00</div>
+          </div>
+        </div>
+        <!-- Carnegie Credit Toggle -->
+        <div class="bg-[#FAF5EE] border border-[#E9DFD3] p-3 rounded-xl flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="font-bold text-xs text-[#3B1F2B]">Carnegie Credit Calculator</span>
+            <span class="text-[10px] text-[#7A6870]">Auto-apportion units (120 hrs = 1.0 Credit)</span>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="carnegie-toggle" checked="" class="sr-only peer" onchange="toggleCarnegie(this.checked)">
+            <div class="w-9 h-5 bg-[#D2C3C7] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#C89B53]"></div>
+          </label>
+        </div>
+        <!-- Grading Format Toggle -->
+        <div class="flex items-center justify-between text-xs font-bold">
+          <span class="text-[#7A6870]">Grading Format:</span>
+          <div class="grid grid-cols-3 gap-1 bg-[#FAF5EE] border border-[#E9DFD3] p-1 rounded-xl">
+            <button id="btn-grade-letter" class="p-1.5 rounded-lg bg-[#3B1F2B] text-white text-center text-[10px]" onclick="setGradingMode('letter')">Letter</button>
+            <button id="btn-grade-numeric" class="p-1.5 rounded-lg text-[#7A6870] hover:text-[#3B1F2B] text-center text-[10px]" onclick="setGradingMode('numeric')">Numeric %</button>
+            <button id="btn-grade-passfail" class="p-1.5 rounded-lg text-[#7A6870] hover:text-[#3B1F2B] text-center text-[10px]" onclick="setGradingMode('passfail')">Pass/Fail</button>
+          </div>
+        </div>
+      </div>
+      <!-- Grades & Credits Table -->
+      <div class="academic-card overflow-hidden">
+        <div class="bg-[#FAF5EE] border-b border-[#E9DFD3] px-3 py-2 flex items-center justify-between text-xs font-bold text-[#7A6870]">
+          <span class="">Subject &amp; Scope</span>
+          <div class="flex items-center gap-4">
+            <span id="header-carnegie-col" class="text-[#C89B53]">Credits</span>
+            <span class="">Mark</span>
+          </div>
+        </div>
+        <div id="grades-table-body" class="divide-y divide-[#E9DFD3]"><div class="p-4 text-center text-xs text-[#7A6870] bg-[#FFFDF9]">No course grades recorded. Add custom subjects in Profile &amp; Settings.</div></div>
+      </div>
+      <div class="flex gap-2">
+        <button class="flex-1 py-2.5 bg-[#3B1F2B] text-white font-bold text-xs rounded-xl shadow-sm hover:opacity-90 transition flex items-center justify-center gap-1.5" onclick="alert('Downloading verified academic transcript PDF.')">
+          <span class="">Download Official Transcript</span>
+        </button>
+        <button class="px-4 py-2.5 bg-[#FAF0E1] border border-[#E5CCA0] text-[#9C7330] font-bold text-xs rounded-xl hover:bg-[#F2E8DB]" onclick="alert('Record digitally sealed.')">
+          Seal &amp; Sign
+        </button>
+      </div>
+    </section>
+    <!-- 4. READING LOG -->
+    <section id="screen-resources" class="screen-view p-4 space-y-4">
+      <div class="academic-card p-4 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-bold text-sm text-[#3B1F2B]">Reading Log</h2>
+            <p id="reading-student-sub" class="text-xs text-[#7A6870]">No active student selected</p>
+          </div>
+          <span id="reading-total-hours" class="bg-[#FAF0E1] border border-[#E5CCA0] text-[#9C7330] text-[10px] font-extrabold px-2.5 py-1 rounded-full">0.0 hrs Total</span>
+        </div>
+        <div class="pt-1">
+          <button class="w-full py-2 bg-[#3B1F2B] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm hover:opacity-90" onclick="openModal('modal-book')">
+            <span class="">+ Log a Book</span>
+          </button>
+        </div>
+      </div>
+      <div id="reading-books-container" class="space-y-2.5"><div class="p-6 text-center text-xs text-[#7A6870] bg-[#FFFDF9] rounded-xl border border-[#E9DFD3]"><p class="font-bold text-[#3B1F2B]">No reading logs recorded yet.</p><p class="text-[10px] mt-1 text-[#C89B53] font-bold">Click '+ Log a Book' to track books and reading hours.</p></div></div>
+    </section>
+    <!-- 5. FIELD TRIPS -->
+    <section id="screen-field-trips" class="screen-view p-4 space-y-4">
+      <div class="academic-card p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-bold text-sm text-[#3B1F2B]">Field Expeditions</h2>
+            <p id="fieldtrips-student-sub" class="text-[11px] text-[#7A6870]">No active student selected</p>
+          </div>
+          <button class="bg-[#3B1F2B] text-white px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-sm hover:opacity-90" onclick="openModal('modal-field-trip')">
+            <span class="">+ Log Venue</span>
+          </button>
+        </div>
+      </div>
+      <div id="field-trips-container" class="space-y-2.5"><div class="p-6 text-center text-xs text-[#7A6870] bg-[#FFFDF9] rounded-xl border border-[#E9DFD3]"><p class="font-bold text-[#3B1F2B]">No field trips recorded yet.</p><p class="text-[10px] mt-1 text-[#C89B53] font-bold">Click '+ Log Venue' to record your student's learning expeditions.</p></div></div>
+    </section>
+    <!-- 6. ATTENDANCE & COMPLIANCE (DYNAMIC BACKEND-DRIVEN 50-STATE ENGINE) -->
+    <section id="screen-attendance" class="screen-view p-4 space-y-4">
+      <div class="academic-card p-4 space-y-3">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="text-[10px] text-[#C89B53] font-extrabold uppercase tracking-wider">State Compliance Engine</span>
+            <h2 id="attendance-state-title" class="font-bold text-sm text-[#3B1F2B]">Missouri Statutory Compliance</h2>
+            <p id="attendance-statute-cite" class="text-xs text-[#7A6870]">Mo. Rev. Stat. § 167.031</p>
+          </div>
+          <span id="attendance-status-badge" class="px-2.5 py-1 rounded-full text-[10px] font-extrabold border shadow-sm bg-[#FAF0E1] text-[#9C7330] border-[#E5CCA0]">Compliant Standing</span>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#3B1F2B] mb-1.5">Select U.S. State Jurisdiction</label>
+          <select id="state-selector" class="w-full p-2.5 bg-[#FAF5EE] border border-[#E0D5C7] text-[#3B1F2B] font-bold text-xs rounded-xl outline-none cursor-pointer hover:border-[#C89B53] transition" onchange="onStateChange(this.value)">
+    <option value="AL">Alabama</option>
+  
+    <option value="AK">Alaska</option>
+  
+    <option value="AZ">Arizona</option>
+  
+    <option value="AR">Arkansas</option>
+  
+    <option value="CA">California</option>
+  
+    <option value="CO">Colorado</option>
+  
+    <option value="CT">Connecticut</option>
+  
+    <option value="DE">Delaware</option>
+  
+    <option value="DC">District of Columbia</option>
+  
+    <option value="FL">Florida</option>
+  
+    <option value="GA">Georgia</option>
+  
+    <option value="HI">Hawaii</option>
+  
+    <option value="ID">Idaho</option>
+  
+    <option value="IL">Illinois</option>
+  
+    <option value="IN">Indiana</option>
+  
+    <option value="IA">Iowa</option>
+  
+    <option value="KS">Kansas</option>
+  
+    <option value="KY">Kentucky</option>
+  
+    <option value="LA">Louisiana</option>
+  
+    <option value="ME">Maine</option>
+  
+    <option value="MD">Maryland</option>
+  
+    <option value="MA">Massachusetts</option>
+  
+    <option value="MI">Michigan</option>
+  
+    <option value="MN">Minnesota</option>
+  
+    <option value="MS">Mississippi</option>
+  
+    <option value="MO">Missouri</option>
+  
+    <option value="MT">Montana</option>
+  
+    <option value="NE">Nebraska</option>
+  
+    <option value="NV">Nevada</option>
+  
+    <option value="NH">New Hampshire</option>
+  
+    <option value="NJ">New Jersey</option>
+  
+    <option value="NM">New Mexico</option>
+  
+    <option value="NY">New York</option>
+  
+    <option value="NC">North Carolina</option>
+  
+    <option value="ND">North Dakota</option>
+  
+    <option value="OH">Ohio</option>
+  
+    <option value="OK">Oklahoma</option>
+  
+    <option value="OR">Oregon</option>
+  
+    <option value="PA">Pennsylvania</option>
+  
+    <option value="RI">Rhode Island</option>
+  
+    <option value="SC">South Carolina</option>
+  
+    <option value="SD">South Dakota</option>
+  
+    <option value="TN">Tennessee</option>
+  
+    <option value="TX">Texas</option>
+  
+    <option value="UT">Utah</option>
+  
+    <option value="VT">Vermont</option>
+  
+    <option value="VA">Virginia</option>
+  
+    <option value="WA">Washington</option>
+  
+    <option value="WV">West Virginia</option>
+  
+    <option value="WI">Wisconsin</option>
+  
+    <option value="WY">Wyoming</option>
+  </select>
+          <div class="mt-2.5 flex flex-col gap-2">
+            <button type="button" class="w-full py-2 bg-[#3B1F2B] text-white font-bold text-xs rounded-xl shadow-sm hover:opacity-95 transition flex items-center justify-center gap-1.5" onclick="saveStateSelection()">
+              <span class="material-symbols-outlined text-[15px]">bookmark_added</span>
+              <span class="">Save State</span>
+            </button>
+            <div id="state-save-toast" class="hidden p-2 rounded-xl bg-[#FAF0E1] border border-[#E5CCA0] text-[#9C7330] text-[11px] font-bold text-center transition"></div>
+          </div>
+        </div>
+      </div>
+      <!-- DYNAMIC STATUTORY PROGRESS CONTAINER -->
+      <div class="academic-card p-4 space-y-3 bg-white border border-[#E0D5C7]">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm">⚖️</span>
+            <h3 class="font-bold text-xs text-[#3B1F2B]">Statutory Compliance Audit</h3>
+          </div>
+          <button type="button" class="text-[10px] font-bold text-[#9C7330] bg-[#FAF0E1] border border-[#E5CCA0] px-2.5 py-1 rounded-full hover:bg-[#F2E8DB]" onclick="quickLogAttendance()">+ Log Today Present</button>
+        </div>
+        <!-- Injected Progress Bar(s) or Exemption Notice based on exact state mandate -->
+        <div id="dynamic-compliance-content" class="space-y-3"><div class="p-4 text-center text-xs text-[#7A6870] bg-[#FFFDF9] rounded-xl border border-[#E0D5C7]"><p class="font-bold text-[#3B1F2B]">No Attendance or Hours Recorded</p><p class="text-[10px] mt-1 text-[#C89B53] font-bold">Add students and log attendance to begin statutory tracking.</p></div></div>
+      </div>
+      <!-- Quick Session Activity Logger -->
+      <div class="academic-card p-4 space-y-3 bg-white border border-[#E0D5C7]">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-xs text-[#3B1F2B]">Instruction &amp; Activity Quick Logger</h3>
+          <span class="text-[10px] font-bold text-[#C89B53]">Contemporaneous Record</span>
+        </div>
+        <div class="space-y-2.5 text-xs">
+          <div>
+            <label class="font-bold text-[#3B1F2B] block mb-1 text-[11px]">Subject Branch</label>
+            <select id="quicklog-subject" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B] text-xs outline-none cursor-pointer"><option value="" class="">-- No Subjects Configured --</option></select>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold text-[#3B1F2B] block mb-1 text-[11px]">Duration (Hours)</label>
+              <input id="quicklog-duration" type="number" step="0.25" value="1.5" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B] text-xs outline-none">
+            </div>
+            <div>
+              <label class="font-bold text-[#3B1F2B] block mb-1 text-[11px]">Log Date</label>
+              <input id="quicklog-date" type="text" readonly="" value="Today (Oct 5, 2026)" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#7A6870] text-xs outline-none cursor-not-allowed">
+            </div>
+          </div>
+          <div>
+            <label class="font-bold text-[#3B1F2B] block mb-1 text-[11px]">Curriculum Notes</label>
+            <input id="quicklog-notes" type="text" placeholder="e.g. Chapter review, lab experiments" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl text-xs font-medium text-[#3B1F2B] outline-none">
+          </div>
+        </div>
+        <button type="button" class="w-full py-2.5 bg-[#3B1F2B] text-white font-bold text-xs rounded-xl shadow-sm hover:opacity-95 transition flex items-center justify-center gap-1.5" onclick="saveQuickLog()">
+          <span class="">✓ Save Activity Log</span>
+          <span class="text-[10px] text-[#FAF5EE]/70">• Encrypted Ledger</span>
+        </button>
+      </div>
+      <!-- Recorded Stream -->
+      <div class="academic-card p-4 space-y-3 bg-white border border-[#E0D5C7]">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-sm">📋</span>
+            <h3 class="font-bold text-xs text-[#3B1F2B]">Recorded Activity Stream</h3>
+          </div>
+          <span id="activity-stream-count" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#FAF0E1] text-[#9C7330] border border-[#E5CCA0]">3 Sessions</span>
+        </div>
+        <div id="activity-stream-list" class="space-y-2"></div>
+      </div>
+    </section>
+    <!-- 7. PROFILE & SETTINGS -->
+    <section id="screen-profile" class="screen-view p-4 space-y-4">
+      <div class="academic-card p-4 space-y-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-[#3B1F2B] text-white flex items-center justify-center font-bold text-base shadow">--</div>
+          <div>
+            <h2 class="font-bold text-sm text-[#3B1F2B]">Parent Educator</h2>
+            <p class="text-xs text-[#7A6870]">Head Educator • No Academy Registered</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#E9DFD3]"><div><label class="block text-[10px] font-bold text-[#7A6870] mb-0.5">School Name</label><input id="profile-school-name-input" type="text" value="" placeholder="e.g. Oakwood Academy" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B] focus:outline-none focus:border-[#C89B53]"></div><div><label class="block text-[10px] font-bold text-[#7A6870] mb-0.5">Parent Educator Name</label><input id="profile-parent-name-input" type="text" value="" placeholder="e.g. Sarah Connolly" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B] focus:outline-none focus:border-[#C89B53]"></div></div>
+        <!-- Student Selector in Profile -->
+        <div class="space-y-1.5 pt-2 border-t border-[#E9DFD3]">
+          <label class="block text-xs font-bold text-[#3B1F2B]">Active Student Course Roster</label>
+          <div id="profile-student-tabs" class="flex gap-2"></div>
+        </div>
+        <!-- Custom Subject Builder -->
+        <div class="bg-[#FAF5EE] border border-[#E9DFD3] p-3 rounded-xl space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-xs text-[#3B1F2B]">Custom Subject Builder</h3>
+            <span class="text-[10px] font-bold text-[#C89B53]">State Statutory Binding</span>
+          </div>
+          <p class="text-[10px] text-[#7A6870]">Define custom subjects and map them directly into state core or elective requirements.</p>
+          <div class="space-y-2">
+            <input id="custom-subj-name" type="text" placeholder="Subject Name (e.g. Robotics, Apologetics)" class="w-full p-2 bg-white border border-[#E0D5C7] text-[#3B1F2B] font-bold text-xs rounded-lg outline-none focus:border-[#C89B53]">
+            <div class="flex gap-2">
+              <select id="custom-subj-type" class="flex-1 p-2 bg-white border border-[#E0D5C7] text-[#3B1F2B] font-bold text-xs rounded-lg outline-none">
+                <option value="Core">Core Subject</option>
+                <option value="Elective">Non-Core / Elective</option>
+              </select>
+              <button class="bg-[#3B1F2B] text-white px-3 py-2 rounded-lg font-bold text-xs shadow-sm hover:opacity-90" onclick="addCustomSubject()">+ Add Subject</button>
+            </div>
+          </div>
+          <div id="custom-subjects-pill-list" class="flex flex-wrap gap-1.5 pt-1"><span class="text-[10px] text-[#7A6870] italic">No custom subjects defined yet.</span></div>
+        </div>
+        <!-- Family Student Roster (Max 4) -->
+        <div class="pt-2 space-y-2.5 border-t border-[#E9DFD3]">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-[#3B1F2B]">Family Student Roster (Max 4)</label>
+            <button id="btn-add-child" type="button" class="px-2.5 py-1 bg-[#FAF0E1] hover:bg-[#F2E8DB] text-[#9C7330] border border-[#E5CCA0] text-[11px] font-bold rounded-lg transition flex items-center gap-1 shadow-sm" onclick="addNewChild()">+ Add Child</button>
+          </div>
+          <div id="children-cards-container" class="space-y-2.5"></div>
+        </div>
+        <div class="pt-2 space-y-2">
+          <button class="w-full py-2.5 bg-[#3B1F2B] text-white font-bold text-xs rounded-xl shadow-sm hover:opacity-90 transition" onclick="alert('Full homeschool compliance ledger exported (PDF portfolio bundle).')">Export Legal Audit Binder</button>
+          <button class="w-full py-2 bg-[#FAF5EE] border border-[#E0D5C7] text-[#3B1F2B] font-bold text-xs rounded-xl hover:bg-[#F2E8DB] transition" onclick="alert('Cloud sync status: All records encrypted and backed up.')">Check Sync Status (Encrypted)</button>
+        </div><div class="mt-4 pt-3 border-t border-[#E9DFD3] flex flex-col items-center"><button type="button" onclick="handleLockVaultSignOut()" class="w-full py-2.5 px-4 rounded-xl bg-white border border-[#D9534F] text-[#D9534F] font-bold text-xs hover:bg-[#FFF5F5] transition flex items-center justify-center gap-2 shadow-sm"><span class="material-symbols-outlined text-[16px]">lock</span>Lock Vault &amp; Sign Out</button><p class="text-[10px] text-[#7A6870] mt-1.5 text-center">Encrypts local session and returns to login gate</p></div>
+      </div>
+    </section>
+  </main>
+  <!-- ================= MODALS ================= -->
+  <!-- 1. Add Work Piece Modal -->
+  <div id="modal-upload-work" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"><div class="bg-white p-4 w-full max-w-sm rounded-2xl shadow-xl space-y-3 border border-[#E0D5C7]"><div class="flex justify-between items-center border-b border-[#E9DFD3] pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[#C89B53] text-[18px]">collections_bookmark</span><h3 class="font-bold text-sm text-[#3B1F2B]">Add Portfolio Sample</h3></div><button class="text-[#7A6870] font-bold text-base hover:text-[#3B1F2B]" onclick="closeModal('modal-upload-work')">✕</button></div><div class="space-y-2.5 text-xs"><label class="font-bold text-[#3B1F2B] block text-xs">Sample Attachment / Evidence Photo</label><input type="file" id="new-work-file-input" accept="image/*" class="hidden" onchange="handlePortfolioPhotoUpload(event)"><input type="file" id="new-work-camera-input" accept="image/*" capture="environment" class="hidden" onchange="handlePortfolioPhotoUpload(event)"><div class="grid grid-cols-2 gap-2"><button type="button" class="py-2 px-2.5 bg-[#FAF5EE] border border-[#E0D5C7] hover:border-[#C89B53] rounded-xl font-bold text-[11px] text-[#3B1F2B] flex items-center justify-center gap-1.5 transition shadow-sm" onclick="document.getElementById('new-work-file-input').click()"><span class="material-symbols-outlined text-[16px] text-[#C89B53]">photo_library</span><span class="">Upload Gallery</span></button><button type="button" class="py-2 px-2.5 bg-[#FAF5EE] border border-[#E0D5C7] hover:border-[#C89B53] rounded-xl font-bold text-[11px] text-[#3B1F2B] flex items-center justify-center gap-1.5 transition shadow-sm" onclick="document.getElementById('new-work-camera-input').click()"><span class="material-symbols-outlined text-[16px] text-[#C89B53]">photo_camera</span><span class="">Take Photo</span></button></div><div id="portfolio-img-preview-wrap" class="hidden p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl flex items-center justify-between"><div class="flex items-center gap-2 overflow-hidden"><img id="portfolio-img-preview" src="" alt="Sample Preview" class="w-11 h-11 rounded-lg object-cover border border-[#E0D5C7] shadow-sm"><div class="overflow-hidden"><p id="portfolio-img-preview-name" class="text-xs font-bold text-[#3B1F2B] truncate">sample.jpg</p><span class="text-[9px] text-[#9C7330] font-extrabold bg-[#FAF0E1] px-1.5 py-0.5 rounded border border-[#E5CCA0]">Photo Attached</span></div></div><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] p-1 font-bold text-sm" onclick="clearPortfolioPhoto()">✕</button></div><div><label class="font-bold text-[#3B1F2B] block mb-1">Project / Work Title</label><input id="new-work-title" type="text" placeholder="e.g. Geometry Tessellations" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg outline-none font-bold text-[#3B1F2B]"></div><div><label class="font-bold text-[#3B1F2B] block mb-1">Subject Area</label><select id="new-work-subject" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg outline-none font-bold text-[#3B1F2B]"><option value="math">Saxon Math 5/4</option><option value="science">Natural Science &amp; Biology</option><option value="la">Language Arts &amp; Lit</option><option value="art">Fine Art &amp; Music</option></select></div><div><label class="font-bold text-[#3B1F2B] block mb-1">Evaluation / Grade / Mastery</label><input id="new-work-grade" type="text" value="A (96%)" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg outline-none font-bold text-[#3B1F2B]"></div></div><div class="flex gap-2 pt-2"><button class="w-1/2 py-2 bg-[#FAF5EE] text-[#7A6870] font-bold text-xs rounded-xl border border-[#E0D5C7] hover:bg-[#F2E8DB]" onclick="closeModal('modal-upload-work')">Cancel</button><button class="w-1/2 py-2 bg-[#3B1F2B] text-white font-bold text-xs rounded-xl hover:opacity-90 shadow-sm" onclick="savePortfolioPiece()">Save to Portfolio</button></div></div></div>
+  <!-- 2. Log Session Modal -->
+  <div id="modal-log" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onmouseenter="if (typeof App !== 'undefined' &amp;&amp; typeof formatDate === 'function') { var el = document.getElementById('new-log-date'); if (el) el.value = formatDate(App.selectedDateKey); }">
+    <div class="academic-card p-5 w-full max-w-sm space-y-3 bg-[#FFFDF9]">
+      <div class="flex justify-between items-center border-b border-[#E9DFD3] pb-2">
+        <h3 class="font-bold text-sm text-[#3B1F2B]">Log Academic Session</h3>
+        <button class="text-[#7A6870] font-bold text-lg" onclick="closeModal('modal-log')">×</button>
+      </div>
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Date</label>
+          <input id="new-log-date" type="text" value="Oct 5, 2026" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]" onfocus="if (!this.value &amp;&amp; typeof App !== 'undefined' &amp;&amp; typeof formatDate === 'function') { this.value = formatDate(App.selectedDateKey); }"><span style="display: none;" id="date-sync-observer" data-sync="active" class=""></span><script class="">(function(){ var origSelect = window.selectCalendarDate; window.selectCalendarDate = function(dKey, forceDayView) { if (typeof origSelect === 'function') { origSelect(dKey); } else if (typeof App !== 'undefined') { App.selectedDateKey = dKey; var parts = dKey.split('-').map(Number); App.currentYear = parts[0]; App.currentMonth = parts[1] - 1; var sel = document.getElementById('cal-month-select'); if (sel) sel.value = App.currentMonth; if (typeof renderCalendar === 'function') renderCalendar(); } if (typeof App !== 'undefined') { var stu = App.students && App.students[App.activeStudent]; var hasSessions = stu && stu.sessionsByDate && stu.sessionsByDate[dKey] && stu.sessionsByDate[dKey].length > 0; if (forceDayView || hasSessions) { if (typeof setCalView === 'function') { setCalView('day'); } } } }; if (typeof createCalCell === 'function') { var origCreateCalCell = window.createCalCell; window.createCalCell = function(dayNum, dKey, isOtherMonth) { var cell = origCreateCalCell(dayNum, dKey, isOtherMonth); var stu = App.students[App.activeStudent]; var sessions = (stu && stu.sessionsByDate && stu.sessionsByDate[dKey]) || []; cell.onclick = function() { window.selectCalendarDate(dKey, sessions.length > 0); }; return cell; }; } })();</script>
+        </div>
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Subject</label>
+          <select id="new-log-subject" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]"><option value="" class="">-- No Subjects Configured --</option></select>
+        </div>
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Duration (Hours)</label>
+          <input id="new-log-hours" type="number" step="0.25" value="1.0" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]">
+        </div>
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Description / Notes</label>
+          <textarea id="new-log-notes" rows="2" placeholder="Topics covered..." class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-medium"></textarea>
+        </div>
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button class="w-1/2 py-2.5 bg-[#FAF5EE] text-[#7A6870] font-bold rounded-xl text-xs border border-[#E0D5C7]" onclick="closeModal('modal-log')">Cancel</button>
+        <button class="w-1/2 py-2.5 bg-[#3B1F2B] text-white font-bold rounded-xl text-xs" onclick="saveCalendarSession()">Save Session</button>
+      </div>
+    </div>
+  </div>
+  <!-- 3. Field Trip Modal (Single Subject Enforced) -->
+  <div id="modal-field-trip" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="academic-card p-5 w-full max-w-sm space-y-3 bg-[#FFFDF9]">
+      <div class="flex justify-between items-center border-b border-[#E9DFD3] pb-2">
+        <h3 class="font-bold text-sm text-[#3B1F2B]">Log Field Trip</h3>
+        <button class="text-[#7A6870] font-bold text-lg" onclick="closeModal('modal-field-trip')">×</button>
+      </div>
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Venue / Location</label>
+          <input id="ft-venue-input" type="text" value="Missouri Botanical Garden" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]">
+        </div>
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Single Assigned Subject (Enforced)</label>
+          <select id="ft-subject-select" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]"><option value="" class="">-- No Subjects Configured --</option></select>
+        </div>
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Hours Spent</label>
+          <input id="ft-hours-input" type="number" step="0.5" value="3.0" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]">
+        </div>
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button class="w-1/2 py-2.5 bg-[#FAF5EE] text-[#7A6870] font-bold rounded-xl text-xs border border-[#E0D5C7]" onclick="closeModal('modal-field-trip')">Cancel</button>
+        <button class="w-1/2 py-2.5 bg-[#3B1F2B] text-white font-bold rounded-xl text-xs" onclick="saveFieldTrip()">Attach &amp; Save</button>
+      </div>
+    </div>
+  </div>
+  <!-- 4. Manual Book Modal -->
+  <div id="modal-book" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="academic-card p-5 w-full max-w-sm space-y-3 bg-[#FFFDF9]">
+      <div class="flex justify-between items-center border-b border-[#E9DFD3] pb-2">
+        <h3 class="font-bold text-sm text-[#3B1F2B]">Manual Book Entry</h3>
+        <button class="text-[#7A6870] font-bold text-lg" onclick="closeModal('modal-book')">×</button>
+      </div>
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Book Title</label>
+          <input id="book-title-input" type="text" placeholder="e.g. Island of the Blue Dolphins" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]">
+        </div>
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Author</label>
+          <input id="book-author-input" type="text" placeholder="Scott O'Dell" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]">
+        </div>
+        <div>
+          <label class="font-bold text-[#3B1F2B] block mb-1">Time (Hours)</label>
+          <input id="book-hours-input" type="number" step="0.25" value="1.0" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl font-bold text-[#3B1F2B]">
+        </div>
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button class="w-1/2 py-2.5 bg-[#FAF5EE] text-[#7A6870] font-bold rounded-xl text-xs border border-[#E0D5C7]" onclick="closeModal('modal-book')">Cancel</button>
+        <button class="w-1/2 py-2.5 bg-[#3B1F2B] text-white font-bold rounded-xl text-xs" onclick="saveBook()">Add to Log</button>
+      </div>
+    </div>
+  </div><div id="modal-photo-lightbox" class="hidden fixed inset-0 bg-black/65 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('modal-photo-lightbox')" data-init-datesync="true"><div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl border border-[#E0D5C7]" onclick="event.stopPropagation()"><div class="p-3.5 border-b border-[#E9DFD3] flex items-center justify-between bg-[#FFFDF9]"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[#C89B53] text-[18px]">image</span><h3 id="lightbox-img-caption" class="font-bold text-xs text-[#3B1F2B] truncate">Evidence Photo</h3></div><button type="button" class="text-[#7A6870] hover:text-[#3B1F2B] p-1 font-bold text-base leading-none" onclick="closeModal('modal-photo-lightbox')">✕</button></div><div class="p-3 bg-[#FAF5EE] flex justify-center items-center"><img id="lightbox-img-full" src="" alt="Work Sample Preview" class="w-full max-h-[320px] object-contain rounded-xl border border-[#E0D5C7] bg-white shadow-sm"></div><div class="p-3 bg-[#FFFDF9] flex justify-between items-center text-xs"><span class="text-[10px] text-[#7A6870] font-semibold">Academic Evidence • Auto-synced</span><button type="button" class="px-3 py-1.5 bg-[#3B1F2B] text-white rounded-lg text-xs font-bold hover:opacity-90 transition" onclick="closeModal('modal-photo-lightbox')">Close</button></div></div></div><div id="camera-modal" class="hidden fixed inset-0 bg-black/65 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl border border-[#E0D5C7] flex flex-col"><div class="p-3.5 border-b border-[#E9DFD3] flex items-center justify-between bg-[#FFFDF9]"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[#C89B53] text-[18px]">photo_camera</span><h3 class="font-bold text-xs text-[#3B1F2B]">Document / Work Viewfinder</h3></div><button type="button" class="text-[#7A6870] hover:text-[#3B1F2B] p-1 font-bold text-base leading-none" onclick="closeCameraModal()">✕</button></div><div class="p-3 bg-[#25121B] flex flex-col items-center justify-center relative overflow-hidden min-h-[260px]"><video id="camera-video" autoplay="" playsinline="" class="w-full max-h-[250px] object-cover rounded-xl"></video><canvas id="camera-canvas" class="hidden"></canvas><div id="camera-snapshot-preview-wrap" class="hidden w-full h-[250px] flex items-center justify-center"><img id="camera-snapshot-img" alt="Captured Work Preview" class="w-full h-full object-contain rounded-xl border border-[#E0D5C7] bg-[#FAF5EE]"></div><div id="viewfinder-overlay" class="absolute inset-3 border-2 border-dashed border-[#C89B53]/80 rounded-xl pointer-events-none flex flex-col justify-between p-2"><div class="flex justify-between text-[9px] font-bold text-[#FAF0E1] bg-black/45 px-2 py-0.5 rounded"><span class="">Align Work Piece</span><span class="material-symbols-outlined text-[12px]">crop_free</span></div><div class="text-center text-[9px] text-[#FAF0E1] bg-black/45 px-2 py-0.5 rounded font-semibold">Hold steady over paper or workbook</div></div><div id="camera-fallback-banner" class="hidden absolute inset-0 bg-[#FAF5EE] p-4 flex flex-col items-center justify-center text-center space-y-2"><span class="material-symbols-outlined text-3xl text-[#9C7330]">no_photography</span><h4 class="text-xs font-bold text-[#3B1F2B]">Webcam Feed Inactive</h4><p class="text-[10px] text-[#7A6870]">Camera access was not granted or is not supported. Use the high-resolution device camera upload instead.</p><button type="button" class="px-3 py-1.5 bg-[#3B1F2B] text-white text-xs font-bold rounded-xl shadow-sm hover:opacity-90 flex items-center gap-1.5" onclick="triggerNativeCameraInput()"><span class="material-symbols-outlined text-[15px]">photo_camera</span><span class="">Use Native Camera</span></button></div></div><div class="p-3 space-y-2.5 bg-[#FFFDF9] text-xs"><div class="grid grid-cols-2 gap-2"><div><label class="block text-[10px] font-bold text-[#7A6870] mb-0.5">Assigned Student</label><select id="camera-student-select" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg font-bold text-xs text-[#3B1F2B]"><option value="" class="">No Active Student</option></select></div><div><label class="block text-[10px] font-bold text-[#7A6870] mb-0.5">Subject Area</label><select id="camera-subject-select" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg font-bold text-xs text-[#3B1F2B]"><option value="math">Saxon Math 5/4</option><option value="science">Natural Science</option><option value="la">Language Arts</option><option value="art">Fine Art</option></select></div></div><div><label class="block text-[10px] font-bold text-[#7A6870] mb-0.5">Work Title / Description</label><input id="camera-work-title" type="text" placeholder="e.g. Daily Math Practice Sheet #35" class="w-full p-2 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg font-bold text-xs text-[#3B1F2B] outline-none"></div><div id="camera-view-controls" class="flex items-center justify-between pt-1"><button type="button" class="px-3 py-2 bg-[#FAF5EE] text-[#7A6870] font-bold text-xs rounded-xl border border-[#E0D5C7] hover:bg-[#F2E8DB]" onclick="closeCameraModal()">Cancel</button><button type="button" id="btn-camera-shutter" class="flex-1 ml-2 py-2 bg-[#3B1F2B] text-white font-bold text-xs rounded-xl shadow hover:opacity-90 flex items-center justify-center gap-1.5" onclick="takeViewfinderSnapshot()"><span class="material-symbols-outlined text-[16px]">circle</span><span class="">Capture Work Sample</span></button></div><div id="camera-snap-controls" class="hidden flex items-center gap-2 pt-1"><button type="button" class="w-1/3 py-2 bg-[#FAF5EE] text-[#7A6870] font-bold text-xs rounded-xl border border-[#E0D5C7] hover:bg-[#F2E8DB] flex items-center justify-center gap-1" onclick="retakeViewfinderSnapshot()"><span class="material-symbols-outlined text-[14px]">refresh</span><span class="">Retake</span></button><button type="button" class="flex-1 py-2 bg-[#C89B53] text-white font-bold text-xs rounded-xl shadow hover:opacity-90 flex items-center justify-center gap-1.5" onclick="attachSnapshotToPortfolio()"><span class="material-symbols-outlined text-[16px]">check_circle</span><span class="">Attach to Student Portfolio</span></button></div></div></div></div><script>window.openSessionImageModal = function(src, caption) { var lb = document.getElementById('modal-photo-lightbox'); var img = document.getElementById('lightbox-img-full'); var cap = document.getElementById('lightbox-img-caption'); if (img) img.src = src; if (cap) cap.innerText = caption || 'Evidence Photo'; if (lb) lb.classList.remove('hidden'); }; if (typeof App !== 'undefined' && App.students && App.students['Leo'] && App.students['Leo'].sessionsByDate) { var oct5 = App.students['Leo'].sessionsByDate['2026-10-05']; if (oct5 && oct5.length >= 2) { oct5[0].attachment = 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?auto=format&fit=crop&w=800&q=80'; oct5[0].attachmentName = 'Saxon Math Worksheet #34'; oct5[1].attachment = 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=800&q=80'; oct5[1].attachmentName = 'Planetarium Lab Exhibit'; } } var prevRenderDayAndWeekViews = window.renderDayAndWeekViews; window.renderDayAndWeekViews = function() { var stu = App.students[App.activeStudent]; var dKey = App.selectedDateKey; var sessions = (stu && stu.sessionsByDate && stu.sessionsByDate[dKey]) || []; var totalHrs = sessions.reduce(function(acc, s) { return acc + (parseFloat(s.hours) || 0); }, 0); var dTitle = document.getElementById('day-view-date-title'); var dBadge = document.getElementById('day-view-total-badge'); if (dTitle) dTitle.innerText = formatDate(dKey); if (dBadge) dBadge.innerText = totalHrs.toFixed(1) + ' hrs'; var dayTimeline = document.getElementById('day-view-timeline'); if (dayTimeline) { if (sessions.length === 0) { dayTimeline.innerHTML = '<div class="p-3 text-center text-xs text-[#7A6870]">No academic schedule logged for this day.</div>'; } else { dayTimeline.innerHTML = sessions.map(function(s) { var thumbHtml = ''; var photoSrc = s.attachment || s.photo || s.image; if (photoSrc) { var name = s.attachmentName || 'Work Sample Photo'; thumbHtml = '<div class="mt-2 flex items-center gap-2"><div class="cursor-pointer relative group" onclick="openSessionImageModal(\'' + photoSrc.replace(/'/g, "\\'") + '\', \'' + name.replace(/'/g, "\\'") + '\')"><img src="' + photoSrc + '" alt="' + name + '" class="w-11 h-11 rounded-lg object-cover border border-[#E0D5C7] shadow-sm hover:opacity-90 transition"><div class="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-[10px]"><span class="material-symbols-outlined text-[13px]">zoom_in</span></div></div><div class="flex flex-col"><span class="text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="material-symbols-outlined text-[11px] text-[#C89B53]">photo_library</span> Attached Work</span><span class="text-[9px] text-[#7A6870]">' + name + '</span></div></div>'; } return '<div class="flex items-start space-x-3 p-2.5 rounded-xl bg-[#FFFDF9] border border-[#E9DFD3]"><span class="font-bold text-[#3B1F2B] text-[11px] w-14">' + s.time + '</span><div class="flex-1 border-l-2 pl-2.5" style="border-left-color: ' + s.color + ';"><div class="flex items-center justify-between"><span class="font-bold text-[#3B1F2B]">' + s.full + '</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-[#FAF0E1] text-[#9C7330] font-extrabold">' + s.hours + '</span></div><div class="text-[10px] text-[#7A6870] mt-0.5">' + s.desc + '</div>' + thumbHtml + '</div></div>'; }).join(''); } } var sHeading = document.getElementById('session-list-heading'); var sHours = document.getElementById('session-hours-total'); if (sHeading) sHeading.innerText = 'Sessions for ' + App.activeStudent + ' (' + formatDate(dKey) + ')'; if (sHours) sHours.innerText = totalHrs.toFixed(1) + ' hrs'; var container = document.getElementById('dynamic-sessions-container'); if (container) { if (sessions.length === 0) { container.innerHTML = '<div class="academic-card p-4 text-center text-xs text-[#7A6870] bg-[#FFFDF9]"><p class="font-bold text-[#3B1F2B]">No sessions logged for ' + formatDate(dKey) + '.</p><p class="text-[10px] mt-1 text-[#C89B53] font-bold cursor-pointer hover:underline" onclick="openModal(\'modal-log\')">+ Click here to log hours for this date</p></div>'; } else { container.innerHTML = sessions.map(function(s) { var thumbHtml = ''; var photoSrc = s.attachment || s.photo || s.image; if (photoSrc) { var name = s.attachmentName || 'Work Sample Photo'; thumbHtml = '<div class="mt-2 flex items-center gap-2"><div class="relative group cursor-pointer" onclick="openSessionImageModal(\'' + photoSrc.replace(/'/g, "\\'") + '\', \'' + name.replace(/'/g, "\\'") + '\')"><img src="' + photoSrc + '" alt="' + name + '" class="w-12 h-12 rounded-lg object-cover border border-[#E0D5C7] shadow-sm hover:opacity-90 transition"><div class="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-[10px]"><span class="material-symbols-outlined text-[14px]">zoom_in</span></div></div><div class="flex flex-col"><span class="text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span class="material-symbols-outlined text-[12px] text-[#C89B53]">photo_camera</span> Attached Sample</span><span class="text-[9px] text-[#7A6870]">' + name + ' (Click to expand)</span></div></div>'; } return '<div class="academic-card p-3 border-l-4 flex items-center justify-between" style="border-left-color: ' + s.color + ';"><div class="flex-1 pr-2"><div class="flex items-center space-x-2"><span class="text-xs font-bold text-[#3B1F2B]">' + s.full + '</span><span class="text-[9px] px-1.5 py-0.5 rounded ' + (s.isFieldTrip ? 'bg-[#FAF0E1] text-[#9C7330]' : 'bg-[#F2E8DB] text-[#3B1F2B]') + ' font-extrabold">' + (s.isFieldTrip ? '📍 Field Trip' : 'Core') + '</span></div><p class="text-[11px] text-[#7A6870] mt-0.5">' + s.desc + '</p>' + thumbHtml + '</div><div class="text-right whitespace-nowrap"><span class="text-xs font-extrabold text-[#3B1F2B]">' + s.hours + '</span><div class="text-[10px] text-[#7A6870]">' + s.time + '</div></div></div>'; }).join(''); } } var strip = document.getElementById('cal-week-strip'); if (strip) { var parts = dKey.split('-').map(Number); var curr = new Date(parts[0], parts[1] - 1, parts[2]); var sun = new Date(curr); sun.setDate(curr.getDate() - curr.getDay()); var wkTotal = 0; var html = ''; var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; for (var i = 0; i < 7; i++) { var iter = new Date(sun); iter.setDate(sun.getDate() + i); var ik = toDateKey(iter.getFullYear(), iter.getMonth(), iter.getDate()); var isSel = ik === dKey; var sess = (stu && stu.sessionsByDate && stu.sessionsByDate[ik]) || []; var sh = sess.reduce(function(a, c) { return a + (parseFloat(c.hours) || 0); }, 0); wkTotal += sh; html += '<div class="p-1 rounded-xl ' + (isSel ? 'border-2 border-[#C89B53] bg-[#FAF0E1]' : 'border border-[#E0D5C7] bg-[#FFFDF9]') + ' flex flex-col items-center cursor-pointer min-h-[58px]" onclick="selectCalendarDate(\'' + ik + '\')"><span class="text-[9px] font-bold ' + (isSel ? 'text-[#9C7330]' : 'text-[#7A6870]') + '">' + days[i] + '</span><span class="text-xs font-extrabold text-[#3B1F2B]">' + iter.getDate() + '</span><span class="text-[9px] font-extrabold text-[#3B1F2B] mt-0.5">' + (sh > 0 ? sh + 'h' : '0h') + '</span></div>'; } strip.innerHTML = html; var wkLbl = document.getElementById('cal-week-hours-label'); if (wkLbl) wkLbl.innerText = wkTotal.toFixed(1) + ' hrs total'; var pct = Math.min(100, Math.round((wkTotal / 25) * 100)); var wkPText = document.getElementById('cal-week-progress-text'); var wkPBar = document.getElementById('cal-week-progress-bar'); if (wkPText) wkPText.innerText = wkTotal.toFixed(1) + ' / 25 hrs (' + pct + '%)'; if (wkPBar) wkPBar.style.width = pct + '%'; } };</script><script class="">var currentSessionAttachedPhoto = null; function handleSessionPhotoUpload(e) { const file = e.target.files && e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(evt) { currentSessionAttachedPhoto = { dataUrl: evt.target.result, fileName: file.name }; const previewWrap = document.getElementById('modal-log-preview-wrap'); const previewImg = document.getElementById('modal-log-preview-img'); const previewName = document.getElementById('modal-log-preview-name'); if (previewImg) previewImg.src = evt.target.result; if (previewName) previewName.innerText = file.name; if (previewWrap) previewWrap.classList.remove('hidden'); }; reader.readAsDataURL(file); } function clearSessionPhotoAttachment() { currentSessionAttachedPhoto = null; const previewWrap = document.getElementById('modal-log-preview-wrap'); const previewImg = document.getElementById('modal-log-preview-img'); const fi = document.getElementById('modal-log-file-input'); const ci = document.getElementById('modal-log-camera-input'); if (previewWrap) previewWrap.classList.add('hidden'); if (previewImg) previewImg.src = ''; if (fi) fi.value = ''; if (ci) ci.value = ''; } window.saveCalendarSession = function() { const subjRaw = document.getElementById('new-log-subject').value; const subj = subjRaw.split(' (')[0]; const hrs = parseFloat(document.getElementById('new-log-hours').value) || 1.0; const notes = document.getElementById('new-log-notes').value || 'Completed session'; const stu = App.students[App.activeStudent]; const dKey = App.selectedDateKey; if (!stu.sessionsByDate[dKey]) stu.sessionsByDate[dKey] = []; const sessionRecord = { short: subj.split(' ')[0], full: subj, hours: hrs + 'h', time: 'Logged', color: '#3B1F2B', desc: notes }; if (currentSessionAttachedPhoto) { sessionRecord.attachment = currentSessionAttachedPhoto.dataUrl; } stu.sessionsByDate[dKey].push(sessionRecord); stu.loggedHours += hrs; if (currentSessionAttachedPhoto) { const lowerSubj = subj.toLowerCase(); let cat = 'la'; if (lowerSubj.includes('math')) cat = 'math'; else if (lowerSubj.includes('science') || lowerSubj.includes('nature') || lowerSubj.includes('bio')) cat = 'science'; else if (lowerSubj.includes('art') || lowerSubj.includes('craft') || lowerSubj.includes('music')) cat = 'art'; const pieceTitle = (notes && notes.length > 3 && notes !== 'Completed session') ? notes : subj + ' Evidence'; stu.portfolio.unshift({ cat: cat, icon: '📸', title: pieceTitle, sub: subj, date: formatDate(dKey), grade: 'Attached from Session Log' }); } clearSessionPhotoAttachment(); closeModal('modal-log'); renderCalendar(); renderPortfolio(); renderCompliance(); };</script>
+</div>
+<!-- ================= MODULAR, CLEAN JAVASCRIPT ================= -->
+<script>
+/**
+ * 1. OFFICIAL 50-STATE + DC HOMESCHOOL COMPLIANCE DATABASE
+ * Every state has explicit requirements:
+ * - 'zero': no hours & no days required (AZ, CT, DE, FL, HI, ID, MI, MN, MS, NJ, OK, TX, WY)
+ * - 'days': days only (AL, AK, AR, CA, DC, IL, IN, IA, LA, ME, MD, NV, NH, NM, NC, OR, SD, UT, VT, VA, WA, WV)
+ * - 'hours': hours only (MO, MT, NE, OH, WI)
+ * - 'dual': both days & hours required (GA, KS, KY, MA, NY, ND, PA, RI, SC, TN)
+ */
+const STATE_RULES = {
+  AL: { name: "Alabama", type: "days", days: 180, hours: null, cite: "Ala. Code § 16-28-1" },
+  AK: { name: "Alaska", type: "days", days: 180, hours: null, cite: "Alaska Stat. § 14.30.010" },
+  AZ: { name: "Arizona", type: "zero", days: null, hours: null, cite: "Ariz. Rev. Stat. § 15-802" },
+  AR: { name: "Arkansas", type: "days", days: 178, hours: null, cite: "Ark. Code § 6-15-501" },
+  CA: { name: "California", type: "days", days: 175, hours: null, cite: "Cal. Educ. Code § 48222" },
+  CO: { name: "Colorado", type: "hours", days: null, hours: 684, cite: "Colo. Rev. Stat. § 22-33-104.5" },
+  CT: { name: "Connecticut", type: "zero", days: null, hours: null, cite: "Conn. Gen. Stat. § 10-184" },
+  DE: { name: "Delaware", type: "zero", days: null, hours: null, cite: "14 Del. C. § 2703A" },
+  DC: { name: "District of Columbia", type: "days", days: 180, hours: null, cite: "5-E DCMR § 2100" },
+  FL: { name: "Florida", type: "zero", days: null, hours: null, cite: "Fla. Stat. § 1002.41" },
+  GA: { name: "Georgia", type: "dual", days: 180, hours: 810, cite: "O.C.G.A. § 20-2-690.1" },
+  HI: { name: "Hawaii", type: "zero", days: null, hours: null, cite: "Haw. Admin. Rules § 8-12" },
+  ID: { name: "Idaho", type: "zero", days: null, hours: null, cite: "Idaho Code § 33-202" },
+  IL: { name: "Illinois", type: "days", days: 177, hours: null, cite: "105 ILCS 5/26-1" },
+  IN: { name: "Indiana", type: "days", days: 180, hours: null, cite: "Ind. Code § 20-33-2-21" },
+  IA: { name: "Iowa", type: "days", days: 148, hours: null, cite: "Iowa Code § 299A" },
+  KS: { name: "Kansas", type: "dual", days: 186, hours: 1116, cite: "Kan. Stat. § 72-1111" },
+  KY: { name: "Kentucky", type: "dual", days: 185, hours: 1062, cite: "KRS § 159.030" },
+  LA: { name: "Louisiana", type: "days", days: 180, hours: null, cite: "La. R.S. 17:236.1" },
+  ME: { name: "Maine", type: "days", days: 175, hours: null, cite: "20-A M.R.S. § 5001-A" },
+  MD: { name: "Maryland", type: "days", days: 180, hours: null, cite: "COMAR 13A.10.01" },
+  MA: { name: "Massachusetts", type: "dual", days: 180, hours: 900, cite: "M.G.L. c. 76 § 1" },
+  MI: { name: "Michigan", type: "zero", days: null, hours: null, cite: "MCL § 380.1561" },
+  MN: { name: "Minnesota", type: "zero", days: null, hours: null, cite: "Minn. Stat. § 120A.22" },
+  MS: { name: "Mississippi", type: "zero", days: null, hours: null, cite: "Miss. Code § 37-13-91" },
+  MO: { name: "Missouri", type: "hours", days: null, hours: 1000, cite: "Mo. Rev. Stat. § 167.031" },
+  MT: { name: "Montana", type: "hours", days: null, hours: 720, cite: "Mont. Code § 20-5-109" },
+  NE: { name: "Nebraska", type: "hours", days: null, hours: 1032, cite: "Neb. Rev. Stat. § 79-201" },
+  NV: { name: "Nevada", type: "days", days: 180, hours: null, cite: "NRS § 388D.020" },
+  NH: { name: "New Hampshire", type: "days", days: 180, hours: null, cite: "N.H. Rev. Stat. § 193-A" },
+  NJ: { name: "New Jersey", type: "zero", days: null, hours: null, cite: "N.J.S.A. 18A:38-25" },
+  NM: { name: "New Mexico", type: "days", days: 180, hours: null, cite: "NMSA § 22-1-2.1" },
+  NY: { name: "New York", type: "dual", days: 180, hours: 900, cite: "8 NYCRR § 100.10" },
+  NC: { name: "North Carolina", type: "days", days: 180, hours: null, cite: "N.C.G.S. § 115C-564" },
+  ND: { name: "North Dakota", type: "dual", days: 175, hours: 700, cite: "N.D.C.C. § 15.1-23" },
+  OH: { name: "Ohio", type: "hours", days: null, hours: 900, cite: "Ohio Admin. Code 3301-34" },
+  OK: { name: "Oklahoma", type: "zero", days: null, hours: null, cite: "Okla. Const. art. XIII § 4" },
+  OR: { name: "Oregon", type: "days", days: 180, hours: null, cite: "O.R.S. § 339.030" },
+  PA: { name: "Pennsylvania", type: "dual", days: 180, hours: 900, cite: "24 P.S. § 13-1327.1" },
+  RI: { name: "Rhode Island", type: "dual", days: 180, hours: 1080, cite: "R.I.G.L. § 16-19-1" },
+  SC: { name: "South Carolina", type: "dual", days: 180, hours: 810, cite: "S.C. Code § 59-65-40" },
+  SD: { name: "South Dakota", type: "days", days: 175, hours: null, cite: "S.D.C.L. § 13-27-3" },
+  TN: { name: "Tennessee", type: "dual", days: 180, hours: 720, cite: "Tenn. Code § 49-6-3050" },
+  TX: { name: "Texas", type: "zero", days: null, hours: null, cite: "Texas Educ. Code § 25.086" },
+  UT: { name: "Utah", type: "days", days: 180, hours: null, cite: "Utah Code § 53G-6-204" },
+  VT: { name: "Vermont", type: "days", days: 175, hours: null, cite: "16 V.S.A. § 166b" },
+  VA: { name: "Virginia", type: "days", days: 180, hours: null, cite: "Va. Code § 22.1-254.1" },
+  WA: { name: "Washington", type: "days", days: 180, hours: null, cite: "RCW 28A.225.010" },
+  WV: { name: "West Virginia", type: "days", days: 180, hours: null, cite: "W. Va. Code § 18-8-1" },
+  WI: { name: "Wisconsin", type: "hours", days: null, hours: 875, cite: "Wis. Stat. § 118.15" },
+  WY: { name: "Wyoming", type: "zero", days: null, hours: null, cite: "Wyo. Stat. § 21-4-101" }
+};
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+/**
+ * 2. APPLICATION STATE
+ */
+const App = {
+  activeStudent: 'Leo',
+  currentState: 'MO',
+  gradingScale: 'letter',
+  carnegieEnabled: true,
+  currentCalendarView: 'month',
+  currentYear: 2026,
+  currentMonth: 9, // October
+  selectedDateKey: '2026-10-05',
+  students: {
+    'Leo': {
+      name: 'Leo', grade: '4th Grade', loggedDays: 142, loggedHours: 642.0, gpa: 3.95,
+      subjects: [
+        { name: "Saxon Math 5/4", type: "Core", hours: 112, letter: "A (95%)", num: "95%", pf: "Pass" },
+        { name: "Natural Science & Biology", type: "Core", hours: 76, letter: "A- (91%)", num: "91%", pf: "Pass" },
+        { name: "Language Arts & Lit", type: "Core", hours: 98, letter: "A (94%)", num: "94%", pf: "Pass" },
+        { name: "Social Studies & US History", type: "Core", hours: 65, letter: "A (97%)", num: "97%", pf: "Pass" },
+        { name: "Piano & Music Theory", type: "Elective", hours: 42, letter: "A (98%)", num: "98%", pf: "Pass" }
+      ],
+      sessionsByDate: {
+        '2026-10-01': [
+          { short: "Saxon Math", full: "Saxon Math 5/4", hours: "1.5h", time: "9:00 AM", color: "#3B1F2B", desc: "Long division with 2-digit quotients" },
+          { short: "Lang Arts", full: "Language Arts", hours: "1.5h", time: "11:00 AM", color: "#C89B53", desc: "Expository paragraph structure" }
+        ],
+        '2026-10-02': [
+          { short: "Saxon Math", full: "Saxon Math 5/4", hours: "1.5h", time: "9:00 AM", color: "#3B1F2B", desc: "Geometry: perimeter of polygons" },
+          { short: "📍 Science Ctr", full: "Natural Science", hours: "2.0h", time: "11:00 AM", color: "#C89B53", desc: "St. Louis Science Center - Planetarium", isFieldTrip: true }
+        ],
+        '2026-10-05': [
+          { short: "Saxon Math", full: "Saxon Math 5/4", hours: "1.5h", time: "9:00 AM", color: "#3B1F2B", desc: "Lesson 34: Long division with remainders & review test" },
+          { short: "📍 Planetarium", full: "Natural Science & Biology", hours: "2.0h", time: "11:30 AM", color: "#C89B53", desc: "Planetarium & ecology exhibits", isFieldTrip: true },
+          { short: "📖 Red Fern", full: "Literature & Reading", hours: "1.0h", time: "2:00 PM", color: "#5A3445", desc: "Where the Red Fern Grows (Chapters 4–6)" }
+        ],
+        '2026-10-06': [
+          { short: "Saxon Math", full: "Saxon Math 5/4", hours: "1.5h", time: "9:00 AM", color: "#3B1F2B", desc: "Subtracting fractions with common denominators" },
+          { short: "Plant Biology", full: "Natural Science", hours: "1.5h", time: "11:00 AM", color: "#C89B53", desc: "Plant kingdom taxonomy and lab" }
+        ],
+        '2026-10-07': [
+          { short: "Saxon Math", full: "Saxon Math 5/4", hours: "1.5h", time: "9:00 AM", color: "#3B1F2B", desc: "Cumulative Practice Test 6" },
+          { short: "US History", full: "Social Studies", hours: "1.5h", time: "11:00 AM", color: "#C89B53", desc: "Colonial town meetings primary sources" }
+        ]
+      },
+      portfolio: [
+        { cat: "math", icon: "📐", title: "Geometry Tessellations", sub: "Saxon Math 5/4", date: "Oct 1, 2026", grade: "A (98%)" },
+        { cat: "science", icon: "🔬", title: "Leaf Cell Microscopy", sub: "Natural Science", date: "Sep 28, 2026", grade: "A (95%)" },
+        { cat: "la", icon: "✍️", title: "Persuasive Essay", sub: "Language Arts", date: "Sep 20, 2026", grade: "A- (92%)" }
+      ],
+      reading: {
+        totalHours: "32.5 hrs Total",
+        books: [
+          { title: "Where the Red Fern Grows", author: "Wilson Rawls", progress: "75% (180 pgs)", pct: "75%", hours: "14.5 hrs" },
+          { title: "The Secret Garden", author: "Frances Hodgson Burnett", progress: "Completed", pct: "100%", hours: "18.0 hrs" }
+        ]
+      },
+      fieldTrips: [
+        { subject: "Natural Science", title: "St. Louis Science Center", address: "5050 Oakland Ave, St. Louis, MO", hours: "3.5 Hrs", notes: "Planetarium sky maps and kinetic stations.", date: "Oct 2, 2026" },
+        { subject: "Social Studies", title: "Missouri History Museum", address: "5700 Lindell Blvd, St. Louis, MO", hours: "2.5 Hrs", notes: "1904 World's Fair and Lewis & Clark cartography.", date: "Sep 22, 2026" }
+      ]
+    },
+    'Maya': {
+      name: 'Maya', grade: '1st Grade', loggedDays: 138, loggedHours: 498.0, gpa: 4.00,
+      subjects: [
+        { name: "All About Reading Level 1", type: "Core", hours: 110, letter: "A (99%)", num: "99%", pf: "Pass" },
+        { name: "Math-U-See Alpha", type: "Core", hours: 95, letter: "A (98%)", num: "98%", pf: "Pass" },
+        { name: "Nature Study & Sketching", type: "Core", hours: 75, letter: "A (96%)", num: "96%", pf: "Pass" },
+        { name: "Creative Arts & Crafts", type: "Elective", hours: 44, letter: "A (100%)", num: "100%", pf: "Pass" }
+      ],
+      sessionsByDate: {
+        '2026-10-01': [
+          { short: "Phonics Cards", full: "Reading Level 1", hours: "1.0h", time: "9:00 AM", color: "#3B1F2B", desc: "Phonogram cards and decodable reader" },
+          { short: "Addition Facts", full: "Math Alpha", hours: "1.0h", time: "10:30 AM", color: "#C89B53", desc: "Single-digit addition facts +2" }
+        ],
+        '2026-10-05': [
+          { short: "Reading L1", full: "All About Reading", hours: "1.0h", time: "9:00 AM", color: "#3B1F2B", desc: "Lesson 22: Consonant blends" },
+          { short: "Math Alpha", full: "Math-U-See Alpha", hours: "1.0h", time: "10:30 AM", color: "#C89B53", desc: "Place value unit blocks" }
+        ]
+      },
+      portfolio: [
+        { cat: "la", icon: "📖", title: "Phonics Alphabet Wheel", sub: "Language Arts", date: "Oct 5, 2026", grade: "Mastered" },
+        { cat: "art", icon: "🦋", title: "Monarch Butterfly Study", sub: "Fine Art", date: "Oct 2, 2026", grade: "A (100%)" }
+      ],
+      reading: {
+        totalHours: "24.0 hrs Total",
+        books: [
+          { title: "Frog and Toad Are Friends", author: "Arnold Lobel", progress: "Completed", pct: "100%", hours: "12.0 hrs" }
+        ]
+      },
+      fieldTrips: [
+        { subject: "Nature Study", title: "Sophia M. Sachs Butterfly House", address: "15193 Olive Blvd, Chesterfield, MO", hours: "2.5 Hrs", notes: "Tropical butterfly habitat and chrysalis study.", date: "Sep 29, 2026" }
+      ]
+    }
+  }
+};
+/**
+ * 3. HELPER UTILITIES
+ */
+function toDateKey(y, m, d) {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+function formatDate(dKey) {
+  const [y, m, d] = dKey.split('-').map(Number);
+  return `${MONTH_NAMES[m - 1].substring(0, 3)} ${d}, ${y}`;
+}
+function calcCarnegie(hrs) {
+  if (hrs >= 120) return "1.0 Credit";
+  if (hrs >= 60) return "0.5 Credit";
+  if (hrs >= 30) return "0.25 Credit";
+  return "0.1 Credit";
+}
+/**
+ * 4. NAVIGATION & MODALS
+ */
+function navigateTo(screenId) {
+  document.querySelectorAll('.screen-view').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('screen-' + screenId);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  closeMenu();
+}
+function navAndClose(id) { navigateTo(id); closeMenu(); }
+function toggleMenu() {
+  document.getElementById('side-drawer').classList.toggle('-translate-x-full');
+  document.getElementById('drawer-backdrop').classList.toggle('hidden');
+}
+function closeMenu() {
+  document.getElementById('side-drawer').classList.add('-translate-x-full');
+  document.getElementById('drawer-backdrop').classList.add('hidden');
+}
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+/**
+ * 5. STUDENT MANAGEMENT
+ */
+function switchStudent(name) {
+  App.activeStudent = name;
+  document.getElementById('global-student-select').value = name;
+  renderProfileTabs();
+  renderAll();
+}
+function renderProfileTabs() {
+  const container = document.getElementById('profile-student-tabs');
+  if (!container) return;
+  container.innerHTML = Object.keys(App.students).map(k => {
+    const isAct = k === App.activeStudent;
+    return `<button class="px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm ${isAct ? 'bg-[#3B1F2B] text-white' : 'bg-[#FAF5EE] border border-[#E0D5C7] text-[#7A6870] hover:text-[#3B1F2B]'}" onclick="switchStudent('${k}')">${k}</button>`;
+  }).join('');
+}
+function renderChildrenCards() {
+  const container = document.getElementById('children-cards-container');
+  if (!container) return;
+  const names = Object.keys(App.students);
+  container.innerHTML = names.map((k, idx) => `
+    <div class="p-2.5 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-extrabold text-[#3B1F2B]">Child #${idx + 1}</span>
+        <span class="text-[9px] font-bold text-[#9C7330] bg-[#FAF0E1] px-2 py-0.5 rounded border border-[#E5CCA0]">Active Record</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] font-bold text-[#7A6870] mb-0.5">Student Name</label>
+          <input type="text" value="${App.students[k].name}" class="w-full p-2 bg-white border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B] focus:outline-none focus:border-[#C89B53]" oninput="updateChildName('${k}', this.value)">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-[#7A6870] mb-0.5">Grade Level</label>
+          <input type="text" value="${App.students[k].grade}" class="w-full p-2 bg-white border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B] focus:outline-none focus:border-[#C89B53]" oninput="App.students['${k}'].grade = this.value; renderAll();">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function updateChildName(oldKey, newName) {
+  const clean = newName.trim();
+  if (!clean || clean === oldKey) return;
+  App.students[clean] = { ...App.students[oldKey], name: clean };
+  delete App.students[oldKey];
+  if (App.activeStudent === oldKey) App.activeStudent = clean;
+  // Update Header Select
+  const sel = document.getElementById('global-student-select');
+  sel.innerHTML = Object.keys(App.students).map(k => `<option value="${k}" ${k === App.activeStudent ? 'selected' : ''}>${k}</option>`).join('');
+  renderProfileTabs();
+  renderAll();
+}
+function addNewChild() {
+  const currentCount = Object.keys(App.students).length;
+  if (currentCount >= 4) { alert("Maximum of 4 children supported."); return; }
+  const newKey = `Child ${currentCount + 1}`;
+  App.students[newKey] = {
+    name: newKey, grade: 'Kindergarten', loggedDays: 0, loggedHours: 0, gpa: 4.0,
+    subjects: [{ name: "General Studies", type: "Core", hours: 0, letter: "A", num: "100%", pf: "Pass" }],
+    sessionsByDate: {}, portfolio: [], reading: { totalHours: "0 hrs Total", books: [] }, fieldTrips: []
+  };
+  const sel = document.getElementById('global-student-select');
+  const opt = document.createElement('option');
+  opt.value = newKey; opt.text = newKey;
+  sel.appendChild(opt);
+  renderChildrenCards();
+  renderProfileTabs();
+}
+/**
+ * 6. DYNAMIC 50-STATE COMPLIANCE ENGINE
+ */
+function initStatesDropdown() {
+  const sel = document.getElementById('state-selector');
+  if (!sel) return;
+  sel.innerHTML = Object.keys(STATE_RULES).map(code => `
+    <option value="${code}" ${code === App.currentState ? 'selected' : ''}>${STATE_RULES[code].name}</option>
+  `).join('');
+}
+function onStateChange(code) {
+  App.currentState = code;
+  renderCompliance();
+}
+function saveStateSelection() {
+  const rule = STATE_RULES[App.currentState];
+  const toast = document.getElementById('state-save-toast');
+  toast.innerHTML = `<span>✓ State settings updated for <strong>${rule.name}</strong>. Compliance rules saved.</span>`;
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 3000);
+  renderCompliance();
+}
+function renderCompliance() {
+  const rule = STATE_RULES[App.currentState];
+  const stu = App.students[App.activeStudent];
+  document.getElementById('badge-state-abbr').innerText = App.currentState;
+  document.getElementById('attendance-state-title').innerText = `${rule.name} Statutory Compliance`;
+  document.getElementById('attendance-statute-cite').innerText = rule.cite;
+  const contentBox = document.getElementById('dynamic-compliance-content');
+  const ribbonTitle = document.getElementById('statute-quick-title');
+  const ribbonSub = document.getElementById('statute-quick-sub');
+  const ribbonBar = document.getElementById('statute-progress-bar');
+  const ribbonWrapper = document.getElementById('statute-quick-bar-wrapper');
+  ribbonTitle.innerText = `${rule.name} Statutory Progress`;
+  // ZERO REQUIREMENT STATES (AZ, TX, FL, etc.)
+  if (rule.type === 'zero') {
+    contentBox.innerHTML = `
+      <div class="p-4 bg-[#FAF5EE] border border-[#E9DFD3] rounded-xl text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#FAF0E1] text-[#9C7330] font-bold text-lg">⚖️</div>
+        <h4 class="font-bold text-xs text-[#3B1F2B]">${rule.name} Compliance Exemption</h4>
+        <p class="text-[11px] text-[#7A6870] leading-relaxed">
+          ${rule.name} does not mandate specific annual instruction hours or attendance day quotas. Attendance records are maintained for personal family documentation, and statutory compliance is automatically fulfilled.
+        </p>
+        <span class="inline-block text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-[#FAF0E1] text-[#9C7330] border border-[#E5CCA0]">Statutory Compliance: Fulfilled ✓</span>
+      </div>
+    `;
+    ribbonSub.innerText = `In Good Standing • Family-Directed Education (${rule.name})`;
+    ribbonWrapper.classList.add('hidden');
+  } 
+  // DAYS ONLY (CA, AL, etc.)
+  else if (rule.type === 'days') {
+    ribbonWrapper.classList.remove('hidden');
+    const dayPct = Math.min(100, Math.round((stu.loggedDays / rule.days) * 100));
+    contentBox.innerHTML = `
+      <div class="p-3 bg-[#FFFDF9] border border-[#E0D5C7] rounded-xl shadow-sm space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold text-[#7A6870]">Attendance Days Logged</span>
+          <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-[#FAF0E1] text-[#9C7330] border border-[#E5CCA0]">${dayPct}% Met</span>
+        </div>
+        <div class="text-lg font-extrabold text-[#3B1F2B] leading-none">${stu.loggedDays} <span class="text-[10px] font-medium text-[#7A6870]">/ ${rule.days} Days</span></div>
+        <div class="w-full bg-[#FAF5EE] border border-[#E9DFD3] h-2 rounded-full overflow-hidden">
+          <div class="bg-[#C89B53] h-full" style="width: ${dayPct}%;"></div>
+        </div>
+        <div class="flex justify-between text-[10px] font-bold text-[#9C7330]">
+          <span>${Math.max(0, rule.days - stu.loggedDays)} days remaining</span>
+          <span>Target: ${rule.days} days</span>
+        </div>
+      </div>
+    `;
+    ribbonSub.innerText = `In Good Standing • ${stu.loggedDays} of ${rule.days} Attendance Days (${rule.name})`;
+    ribbonBar.style.width = `${dayPct}%`;
+  }
+  // HOURS ONLY (MO, OH, WI, etc.)
+  else if (rule.type === 'hours') {
+    ribbonWrapper.classList.remove('hidden');
+    const hrPct = Math.min(100, Math.round((stu.loggedHours / rule.hours) * 100));
+    contentBox.innerHTML = `
+      <div class="p-3 bg-[#FFFDF9] border border-[#E0D5C7] rounded-xl shadow-sm space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold text-[#7A6870]">Instruction Hours Logged</span>
+          <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-[#FAF0E1] text-[#9C7330] border border-[#E5CCA0]">${hrPct}% Met</span>
+        </div>
+        <div class="text-lg font-extrabold text-[#3B1F2B] leading-none">${stu.loggedHours.toFixed(1)} <span class="text-[10px] font-medium text-[#7A6870]">/ ${rule.hours} Hours</span></div>
+        <div class="w-full bg-[#FAF5EE] border border-[#E9DFD3] h-2 rounded-full overflow-hidden">
+          <div class="bg-[#C89B53] h-full" style="width: ${hrPct}%;"></div>
+        </div>
+        <div class="flex justify-between text-[10px] font-bold text-[#9C7330]">
+          <span>${Math.max(0, (rule.hours - stu.loggedHours)).toFixed(1)} hours remaining</span>
+          <span>Requirement: ${rule.hours} hrs</span>
+        </div>
+      </div>
+    `;
+    ribbonSub.innerText = `In Good Standing • ${stu.loggedHours.toFixed(1)} of ${rule.hours} Logged Hours (${rule.name})`;
+    ribbonBar.style.width = `${hrPct}%`;
+  }
+  // DUAL REQUIREMENTS (NY, PA, GA, TN, etc.)
+  else if (rule.type === 'dual') {
+    ribbonWrapper.classList.remove('hidden');
+    const dayPct = Math.min(100, Math.round((stu.loggedDays / rule.days) * 100));
+    const hrPct = Math.min(100, Math.round((stu.loggedHours / rule.hours) * 100));
+    contentBox.innerHTML = `
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-2.5 bg-[#FFFDF9] border border-[#E0D5C7] rounded-xl shadow-sm space-y-1.5">
+          <div class="flex justify-between items-center text-[10px] font-bold text-[#7A6870]"><span>Days</span><span class="text-[#9C7330]">${dayPct}%</span></div>
+          <div class="text-sm font-extrabold text-[#3B1F2B]">${stu.loggedDays} <span class="text-[9px] font-normal text-[#7A6870]">/ ${rule.days}d</span></div>
+          <div class="w-full bg-[#FAF5EE] h-1.5 rounded-full overflow-hidden"><div class="bg-[#C89B53] h-full" style="width: ${dayPct}%;"></div></div>
+        </div>
+        <div class="p-2.5 bg-[#FFFDF9] border border-[#E0D5C7] rounded-xl shadow-sm space-y-1.5">
+          <div class="flex justify-between items-center text-[10px] font-bold text-[#7A6870]"><span>Hours</span><span class="text-[#9C7330]">${hrPct}%</span></div>
+          <div class="text-sm font-extrabold text-[#3B1F2B]">${stu.loggedHours.toFixed(0)} <span class="text-[9px] font-normal text-[#7A6870]">/ ${rule.hours}h</span></div>
+          <div class="w-full bg-[#FAF5EE] h-1.5 rounded-full overflow-hidden"><div class="bg-[#C89B53] h-full" style="width: ${hrPct}%;"></div></div>
+        </div>
+      </div>
+    `;
+    ribbonSub.innerText = `In Good Standing • ${stu.loggedDays} Days & ${stu.loggedHours.toFixed(0)} Hours (${rule.name})`;
+    ribbonBar.style.width = `${Math.round((dayPct + hrPct) / 2)}%`;
+  }
+}
+/**
+ * 7. CALENDAR & LOGGING RENDERERS
+ */
+function renderCalendar() {
+  const grid = document.getElementById('month-grid-cells');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const stu = App.students[App.activeStudent];
+  const { currentYear: y, currentMonth: m, selectedDateKey: selKey } = App;
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const prevMonthDays = new Date(y, m, 0).getDate();
+  // Lead-in days
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const dNum = prevMonthDays - i;
+    const dKey = toDateKey(m === 0 ? y - 1 : y, m === 0 ? 11 : m - 1, dNum);
+    grid.appendChild(createCalCell(dNum, dKey, true));
+  }
+  // Month days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dKey = toDateKey(y, m, d);
+    grid.appendChild(createCalCell(d, dKey, false));
+  }
+  // Trailing slots
+  const total = firstDay + daysInMonth;
+  const slots = total > 35 ? 42 : 35;
+  for (let d = 1; d <= (slots - total); d++) {
+    const dKey = toDateKey(m === 11 ? y + 1 : y, m === 11 ? 0 : m + 1, d);
+    grid.appendChild(createCalCell(d, dKey, true));
+  }
+  renderDayAndWeekViews();
+}
+function createCalCell(dayNum, dKey, isOtherMonth) {
+  const stu = App.students[App.activeStudent];
+  const isSelected = dKey === App.selectedDateKey;
+  const sessions = stu.sessionsByDate[dKey] || [];
+  const totalHrs = sessions.reduce((acc, s) => acc + (parseFloat(s.hours) || 0), 0);
+  const cell = document.createElement('div');
+  if (isOtherMonth) {
+    cell.className = 'min-h-[62px] p-1 text-[#BDB0A4] rounded-lg flex flex-col justify-start text-[10px] cursor-pointer hover:bg-[#FAF5EE]';
+  } else if (isSelected) {
+    cell.className = 'cal-day-cell min-h-[62px] p-1 rounded-lg flex flex-col justify-start cursor-pointer text-[10px] font-extrabold text-[#3B1F2B] bg-[#FAF0E1] border-2 border-[#C89B53] shadow-sm';
+  } else if (sessions.length > 0) {
+    cell.className = 'cal-day-cell min-h-[62px] p-1 rounded-lg flex flex-col justify-start cursor-pointer text-[10px] bg-[#FFFDF9] border border-[#E9DFD3] hover:border-[#C89B53] text-[#3B1F2B] font-semibold';
+  } else {
+    cell.className = 'cal-day-cell min-h-[62px] p-1 rounded-lg flex flex-col justify-start cursor-pointer text-[10px] bg-[#FAF5EE] border border-transparent hover:border-[#E0D5C7] text-[#3B1F2B]';
+  }
+  cell.onclick = () => selectCalendarDate(dKey);
+  let html = `
+    <div class="flex items-center justify-between w-full">
+      <span class="font-bold text-[10px]">${dayNum}</span>
+      ${totalHrs > 0 ? `<span class="text-[8px] font-extrabold text-[#C89B53] bg-[#FAF0E1] px-1 rounded">${totalHrs}h</span>` : ''}
+    </div>
+  `;
+  if (sessions.length > 0) {
+    html += `<div class="mt-1 w-full space-y-0.5">`;
+    sessions.slice(0, 2).forEach(s => {
+      html += `<div class="event-bar bg-[#FAF0E1] text-[#3B1F2B] border-l-2 border-[#C89B53]">${s.short}</div>`;
+    });
+    if (sessions.length > 2) html += `<div class="text-[7.5px] font-bold text-[#7A6870] text-right">+${sessions.length - 2} more</div>`;
+    html += `</div>`;
+  }
+  cell.innerHTML = html;
+  return cell;
+}
+function selectCalendarDate(dKey) {
+  App.selectedDateKey = dKey;
+  const [y, m] = dKey.split('-').map(Number);
+  App.currentYear = y;
+  App.currentMonth = m - 1;
+  document.getElementById('cal-month-select').value = App.currentMonth;
+  renderCalendar();
+}
+function renderDayAndWeekViews() {
+  const stu = App.students[App.activeStudent];
+  const dKey = App.selectedDateKey;
+  const sessions = stu.sessionsByDate[dKey] || [];
+  const totalHrs = sessions.reduce((acc, s) => acc + (parseFloat(s.hours) || 0), 0);
+  // Day View
+  document.getElementById('day-view-date-title').innerText = formatDate(dKey);
+  document.getElementById('day-view-total-badge').innerText = `${totalHrs.toFixed(1)} hrs`;
+  const dayTimeline = document.getElementById('day-view-timeline');
+  if (sessions.length === 0) {
+    dayTimeline.innerHTML = `<div class="p-3 text-center text-xs text-[#7A6870]">No academic schedule logged for this day.</div>`;
+  } else {
+    dayTimeline.innerHTML = sessions.map(s => `
+      <div class="flex items-start space-x-3 p-2.5 rounded-xl bg-[#FFFDF9] border border-[#E9DFD3]">
+        <span class="font-bold text-[#3B1F2B] text-[11px] w-14">${s.time}</span>
+        <div class="flex-1 border-l-2 pl-2.5" style="border-left-color: ${s.color};">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-[#3B1F2B]">${s.full}</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#FAF0E1] text-[#9C7330] font-extrabold">${s.hours}</span>
+          </div>
+          <div class="text-[10px] text-[#7A6870] mt-0.5">${s.desc}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  // Active Day Container Under Grid
+  document.getElementById('session-list-heading').innerText = `Sessions for ${App.activeStudent} (${formatDate(dKey)})`;
+  document.getElementById('session-hours-total').innerText = `${totalHrs.toFixed(1)} hrs`;
+  const container = document.getElementById('dynamic-sessions-container');
+  if (sessions.length === 0) {
+    container.innerHTML = `
+      <div class="academic-card p-4 text-center text-xs text-[#7A6870] bg-[#FFFDF9]">
+        <p class="font-bold text-[#3B1F2B]">No sessions logged for ${formatDate(dKey)}.</p>
+        <p class="text-[10px] mt-1 text-[#C89B53] font-bold cursor-pointer hover:underline" onclick="openModal('modal-log')">+ Click here to log hours for this date</p>
+      </div>
+    `;
+  } else {
+    container.innerHTML = sessions.map(s => `
+      <div class="academic-card p-3 border-l-4 flex items-center justify-between" style="border-left-color: ${s.color};">
+        <div class="flex-1 pr-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-bold text-[#3B1F2B]">${s.full}</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded ${s.isFieldTrip ? 'bg-[#FAF0E1] text-[#9C7330]' : 'bg-[#F2E8DB] text-[#3B1F2B]'} font-extrabold">${s.isFieldTrip ? '📍 Field Trip' : 'Core'}</span>
+          </div>
+          <p class="text-[11px] text-[#7A6870] mt-0.5">${s.desc}</p>
+        </div>
+        <div class="text-right whitespace-nowrap">
+          <span class="text-xs font-extrabold text-[#3B1F2B]">${s.hours}</span>
+          <div class="text-[10px] text-[#7A6870]">${s.time}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  // Week View Strip
+  const strip = document.getElementById('cal-week-strip');
+  const [y, m, d] = dKey.split('-').map(Number);
+  const curr = new Date(y, m - 1, d);
+  const sun = new Date(curr); sun.setDate(curr.getDate() - curr.getDay());
+  let wkTotal = 0;
+  let html = '';
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  for (let i = 0; i < 7; i++) {
+    const iter = new Date(sun); iter.setDate(sun.getDate() + i);
+    const ik = toDateKey(iter.getFullYear(), iter.getMonth(), iter.getDate());
+    const isSel = ik === dKey;
+    const sess = stu.sessionsByDate[ik] || [];
+    const sh = sess.reduce((a, c) => a + (parseFloat(c.hours) || 0), 0);
+    wkTotal += sh;
+    html += `
+      <div class="p-1 rounded-xl ${isSel ? 'border-2 border-[#C89B53] bg-[#FAF0E1]' : 'border border-[#E0D5C7] bg-[#FFFDF9]'} flex flex-col items-center cursor-pointer min-h-[58px]" onclick="selectCalendarDate('${ik}')">
+        <span class="text-[9px] font-bold ${isSel ? 'text-[#9C7330]' : 'text-[#7A6870]'}">${days[i]}</span>
+        <span class="text-xs font-extrabold text-[#3B1F2B]">${iter.getDate()}</span>
+        <span class="text-[9px] font-extrabold text-[#3B1F2B] mt-0.5">${sh > 0 ? sh + 'h' : '0h'}</span>
+      </div>
+    `;
+  }
+  strip.innerHTML = html;
+  document.getElementById('cal-week-hours-label').innerText = `${wkTotal.toFixed(1)} hrs total`;
+  const pct = Math.min(100, Math.round((wkTotal / 25) * 100));
+  document.getElementById('cal-week-progress-text').innerText = `${wkTotal.toFixed(1)} / 25 hrs (${pct}%)`;
+  document.getElementById('cal-week-progress-bar').style.width = `${pct}%`;
+}
+function setCalView(view) {
+  App.currentCalendarView = view;
+  ['day', 'week', 'month'].forEach(v => {
+    const btn = document.getElementById(`btn-cal-${v}`);
+    const sec = document.getElementById(`cal-view-${v}`);
+    if (v === view) {
+      btn.className = 'px-2.5 py-1 rounded-md bg-[#3B1F2B] text-white shadow-sm transition';
+      sec.classList.remove('hidden');
+    } else {
+      btn.className = 'px-2 py-1 rounded-md transition text-[#7A6870]';
+      sec.classList.add('hidden');
+    }
+  });
+}
+function onMonthSelect(val) {
+  App.currentMonth = parseInt(val, 10);
+  renderCalendar();
+}
+function navigateMonth(dir) {
+  let m = App.currentMonth + dir;
+  if (m < 0) { m = 11; App.currentYear -= 1; }
+  else if (m > 11) { m = 0; App.currentYear += 1; }
+  App.currentMonth = m;
+  document.getElementById('cal-month-select').value = m;
+  renderCalendar();
+}
+/**
+ * 8. REPORT CARD, PORTFOLIO & LOGGERS
+ */
+function toggleCarnegie(on) {
+  App.carnegieEnabled = on;
+  document.getElementById('header-carnegie-col').style.display = on ? 'inline-block' : 'none';
+  renderReportCard();
+}
+function setGradingMode(mode) {
+  App.gradingScale = mode;
+  ['letter', 'numeric', 'passfail'].forEach(m => {
+    const btn = document.getElementById(`btn-grade-${m}`);
+    btn.className = m === mode ? 'p-1.5 rounded-lg bg-[#3B1F2B] text-white text-center text-[10px]' : 'p-1.5 rounded-lg text-[#7A6870] hover:text-[#3B1F2B] text-center text-[10px]';
+  });
+  renderReportCard();
+}
+function renderReportCard() {
+  const stu = App.students[App.activeStudent];
+  document.getElementById('report-card-sub').innerText = `Oakwood Academy • ${stu.name} (${stu.grade})`;
+  document.getElementById('report-gpa-val').innerText = stu.gpa.toFixed(2);
+  const tbody = document.getElementById('grades-table-body');
+  tbody.innerHTML = stu.subjects.map(s => `
+    <div class="p-3 flex items-center justify-between">
+      <div>
+        <div class="font-bold text-[#3B1F2B] text-xs">${s.name}</div>
+        <div class="text-[10px] text-[#7A6870]">${s.hours} Hours (${s.type})</div>
+      </div>
+      <div class="flex items-center gap-3">
+        ${App.carnegieEnabled ? `<span class="text-xs font-bold text-[#9C7330]">${calcCarnegie(s.hours)}</span>` : ''}
+        <input type="text" value="${App.gradingScale === 'numeric' ? s.num : (App.gradingScale === 'passfail' ? s.pf : s.letter)}" class="w-20 text-center py-1 bg-[#FAF5EE] border border-[#E0D5C7] rounded-lg font-bold text-xs text-[#3B1F2B]">
+      </div>
+    </div>
+  `).join('');
+}
+function renderPortfolio() {
+  const stu = App.students[App.activeStudent];
+  document.getElementById('portfolio-student-sub').innerText = `Active Student: ${stu.name} (${stu.grade})`;
+  document.getElementById('portfolio-download-btn').innerText = `Download ${stu.name}'s Complete Portfolio (PDF)`;
+  filterPortfolio('all', document.querySelector('.port-filter-btn'));
+}
+function filterPortfolio(cat, btn) {
+  document.querySelectorAll('.port-filter-btn').forEach(b => {
+    b.className = 'port-filter-btn px-3 py-1 rounded-full bg-[#FFFDF9] border border-[#E0D5C7] text-[#7A6870] whitespace-nowrap hover:bg-[#FAF0E1]';
+  });
+  if (btn) btn.className = 'port-filter-btn px-3 py-1 rounded-full bg-[#3B1F2B] text-white shadow-sm whitespace-nowrap';
+  const stu = App.students[App.activeStudent];
+  const items = cat === 'all' ? stu.portfolio : stu.portfolio.filter(p => p.cat === cat);
+  document.getElementById('portfolio-grid').innerHTML = items.map(item => `
+    <div class="academic-card overflow-hidden">
+      <div class="h-24 bg-[#FAF5EE] flex flex-col items-center justify-center p-2 text-center border-b border-[#E9DFD3]">
+        <span class="text-3xl mb-1">${item.icon}</span>
+        <span class="text-[11px] font-bold text-[#3B1F2B]">${item.title}</span>
+      </div>
+      <div class="p-2.5">
+        <span class="text-[9px] font-bold px-1.5 py-0.5 bg-[#FAF0E1] text-[#9C7330] rounded">${item.sub}</span>
+        <div class="text-xs font-bold text-[#3B1F2B] mt-1">${item.date}</div>
+        <div class="text-[10px] text-[#7A6870]">Grade: ${item.grade}</div>
+      </div>
+    </div>
+  `).join('');
+}
+function renderResources() {
+  const stu = App.students[App.activeStudent];
+  document.getElementById('reading-student-sub').innerText = `Verified reading for ${stu.name} (${stu.grade})`;
+  document.getElementById('reading-total-hours').innerText = stu.reading.totalHours;
+  document.getElementById('reading-books-container').innerHTML = stu.reading.books.map(b => `
+    <div class="academic-card p-3 flex items-center justify-between">
+      <div class="flex-1 mr-2">
+        <h4 class="text-xs font-bold text-[#3B1F2B]">${b.title}</h4>
+        <p class="text-[11px] text-[#7A6870]">${b.author}</p>
+        <div class="flex items-center space-x-2 mt-1.5">
+          <div class="w-24 bg-[#EAE0D3] h-1.5 rounded-full overflow-hidden"><div class="bg-[#C89B53] h-full" style="width:${b.pct}"></div></div>
+          <span class="text-[10px] font-bold text-[#9C7330]">${b.progress}</span>
+        </div>
+      </div>
+      <span class="text-xs font-extrabold text-[#3B1F2B] bg-[#FAF0E1] border border-[#E5CCA0] px-2 py-1 rounded-lg">${b.hours}</span>
+    </div>
+  `).join('');
+}
+function renderFieldTrips() {
+  const stu = App.students[App.activeStudent];
+  document.getElementById('fieldtrips-student-sub').innerText = `Locations synced with ${stu.name}'s statutory hours`;
+  document.getElementById('field-trips-container').innerHTML = stu.fieldTrips.map(ft => `
+    <div class="academic-card p-3.5 space-y-2">
+      <div class="flex justify-between items-start">
+        <div>
+          <span class="text-[9px] font-extrabold px-2 py-0.5 bg-[#FAF0E1] text-[#9C7330] rounded-full border border-[#E5CCA0]">${ft.subject}</span>
+          <h3 class="font-bold text-[#3B1F2B] text-sm mt-1">${ft.title}</h3>
+          <p class="text-xs text-[#7A6870] mt-0.5">📍 ${ft.address}</p>
+        </div>
+        <span class="text-xs font-extrabold text-[#3B1F2B] bg-[#FAF0E1] border border-[#E5CCA0] px-2 py-1 rounded-lg">${ft.hours}</span>
+      </div>
+      <p class="text-xs text-[#5A3445] bg-[#FAF5EE] p-2 rounded-xl border border-[#E9DFD3]">"${ft.notes}"</p>
+      <div class="flex justify-between text-[11px]">
+        <a href="https://maps.google.com/?q=${encodeURIComponent(ft.title)}" target="_blank" class="text-[#C89B53] font-bold hover:underline">View in Google Maps ↗</a>
+        <span class="text-[#7A6870]">${ft.date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+function populateSubjectDropdowns() {
+  const stu = App.students[App.activeStudent];
+  const qSelect = document.getElementById('quicklog-subject');
+  const logSelect = document.getElementById('new-log-subject');
+  const ftSelect = document.getElementById('ft-subject-select');
+  const opts = stu.subjects.map(s => `<option value="${s.name}">${s.name} (${s.type})</option>`).join('');
+  if (qSelect) qSelect.innerHTML = opts;
+  if (logSelect) logSelect.innerHTML = opts;
+  if (ftSelect) ftSelect.innerHTML = opts;
+}
+function renderCustomSubjectPills() {
+  const stu = App.students[App.activeStudent];
+  const list = document.getElementById('custom-subjects-pill-list');
+  if (!list) return;
+  list.innerHTML = stu.subjects.map(s => `
+    <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-white border border-[#E0D5C7] text-[#3B1F2B] shadow-sm flex items-center gap-1">
+      <span>${s.name}</span>
+      <span class="text-[#C89B53]">(${s.type})</span>
+    </span>
+  `).join('');
+}
+function addCustomSubject() {
+  const name = document.getElementById('custom-subj-name').value.trim();
+  const type = document.getElementById('custom-subj-type').value;
+  if (!name) return;
+  const stu = App.students[App.activeStudent];
+  stu.subjects.push({ name, type, hours: 15, letter: "A (95%)", num: "95%", pf: "Pass" });
+  document.getElementById('custom-subj-name').value = '';
+  renderCustomSubjectPills();
+  populateSubjectDropdowns();
+  renderReportCard();
+}
+/**
+ * 9. SAVING DATA ACTIONS
+ */
+function saveCalendarSession() {
+  const subj = document.getElementById('new-log-subject').value.split(' (')[0];
+  const hrs = parseFloat(document.getElementById('new-log-hours').value) || 1.0;
+  const notes = document.getElementById('new-log-notes').value || "Completed session";
+  const stu = App.students[App.activeStudent];
+  const dKey = App.selectedDateKey;
+  if (!stu.sessionsByDate[dKey]) stu.sessionsByDate[dKey] = [];
+  stu.sessionsByDate[dKey].push({ short: subj.split(' ')[0], full: subj, hours: `${hrs}h`, time: "Logged", color: "#3B1F2B", desc: notes });
+  stu.loggedHours += hrs;
+  closeModal('modal-log');
+  renderCalendar();
+  renderCompliance();
+}
+function savePortfolioPiece() {
+  const title = document.getElementById('new-work-title').value || "New Project";
+  const sub = document.getElementById('new-work-subject').value;
+  const grade = document.getElementById('new-work-grade').value || "A (95%)";
+  const labelMap = { math: "Saxon Math 5/4", science: "Natural Science", la: "Language Arts", art: "Fine Art" };
+  const stu = App.students[App.activeStudent];
+  stu.portfolio.unshift({ cat: sub, icon: sub === 'math' ? '📐' : (sub === 'science' ? '🔬' : '✍️'), title, sub: labelMap[sub] || 'General', date: "Oct 5, 2026", grade });
+  closeModal('modal-upload-work');
+  renderPortfolio();
+}
+function saveFieldTrip() {
+  const venue = document.getElementById('ft-venue-input').value;
+  const hrs = parseFloat(document.getElementById('ft-hours-input').value) || 2.0;
+  const subj = document.getElementById('ft-subject-select').value.split(' (')[0];
+  const stu = App.students[App.activeStudent];
+  stu.fieldTrips.unshift({ subject: subj, title: venue, address: "Attached via Google Maps", hours: `${hrs} Hrs`, notes: "Interactive field exploration.", date: formatDate(App.selectedDateKey) });
+  stu.loggedHours += hrs;
+  closeModal('modal-field-trip');
+  renderFieldTrips();
+  renderCompliance();
+}
+function saveBook() {
+  const title = document.getElementById('book-title-input').value || "New Book";
+  const author = document.getElementById('book-author-input').value || "Author";
+  const hrs = parseFloat(document.getElementById('book-hours-input').value) || 1.0;
+  const stu = App.students[App.activeStudent];
+  stu.reading.books.unshift({ title, author, progress: "In Progress", pct: "25%", hours: `${hrs} hrs` });
+  closeModal('modal-book');
+  renderResources();
+}
+function quickLogAttendance() {
+  const stu = App.students[App.activeStudent];
+  stu.loggedDays += 1;
+  alert(`✓ Attendance recorded for today. Total: ${stu.loggedDays} days.`);
+  renderCompliance();
+}
+function saveQuickLog() {
+  const s = document.getElementById('quicklog-subject').value;
+  const d = parseFloat(document.getElementById('quicklog-duration').value) || 1.0;
+  const notes = document.getElementById('quicklog-notes').value || "Standard session";
+  const stu = App.students[App.activeStudent];
+  stu.loggedHours += d;
+  alert(`✓ Activity recorded: ${s} (${d} hrs).`);
+  renderCompliance();
+}
+/**
+ * 10. MASTER RENDER & INIT
+ */
+function renderAll() {
+  populateSubjectDropdowns();
+  renderCustomSubjectPills();
+  renderCalendar();
+  renderPortfolio();
+  renderReportCard();
+  renderResources();
+  renderFieldTrips();
+  renderCompliance();
+}
+window.addEventListener('DOMContentLoaded', () => {
+  initStatesDropdown();
+  renderProfileTabs();
+  renderChildrenCards();
+  renderAll();
+});
+</script>
+
+
+
+
+<script>var currentPortfolioAttachedPhoto = null; function handlePortfolioPhotoUpload(e) { var file = e.target.files && e.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function(evt) { currentPortfolioAttachedPhoto = { dataUrl: evt.target.result, fileName: file.name }; var wrap = document.getElementById('portfolio-img-preview-wrap'); var img = document.getElementById('portfolio-img-preview'); var name = document.getElementById('portfolio-img-preview-name'); if (img) img.src = evt.target.result; if (name) name.innerText = file.name; if (wrap) wrap.classList.remove('hidden'); }; reader.readAsDataURL(file); } function clearPortfolioPhoto() { currentPortfolioAttachedPhoto = null; var wrap = document.getElementById('portfolio-img-preview-wrap'); var img = document.getElementById('portfolio-img-preview'); var fi = document.getElementById('new-work-file-input'); var ci = document.getElementById('new-work-camera-input'); if (wrap) wrap.classList.add('hidden'); if (img) img.src = ''; if (fi) fi.value = ''; if (ci) ci.value = ''; } window.savePortfolioPiece = function() { var title = document.getElementById('new-work-title').value || 'New Project'; var sub = document.getElementById('new-work-subject').value; var grade = document.getElementById('new-work-grade').value || 'A (95%)'; var labelMap = { math: 'Saxon Math 5/4', science: 'Natural Science', la: 'Language Arts', art: 'Fine Art' }; var iconMap = { math: '📐', science: '🔬', la: '✍️', art: '🎨' }; var stu = App.students[App.activeStudent]; var newPiece = { cat: sub, icon: iconMap[sub] || '📄', title: title, sub: labelMap[sub] || 'General', date: formatDate(App.selectedDateKey), grade: grade }; if (currentPortfolioAttachedPhoto) { newPiece.image = currentPortfolioAttachedPhoto.dataUrl; } stu.portfolio.unshift(newPiece); clearPortfolioPhoto(); document.getElementById('new-work-title').value = ''; closeModal('modal-upload-work'); renderPortfolio(); }; window.filterPortfolio = function(cat, btn) { document.querySelectorAll('.port-filter-btn').forEach(function(b) { b.className = 'port-filter-btn px-3 py-1 rounded-full bg-[#FFFDF9] border border-[#E0D5C7] text-[#7A6870] whitespace-nowrap hover:bg-[#FAF0E1]'; }); if (btn) btn.className = 'port-filter-btn px-3 py-1 rounded-full bg-[#3B1F2B] text-white shadow-sm whitespace-nowrap'; var stu = App.students[App.activeStudent]; var items = cat === 'all' ? stu.portfolio : stu.portfolio.filter(function(p) { return p.cat === cat; }); var grid = document.getElementById('portfolio-grid'); if (!grid) return; grid.innerHTML = items.map(function(item) { var visualHtml = item.image ? '<div class="h-24 bg-[#FAF5EE] relative group cursor-pointer overflow-hidden border-b border-[#E9DFD3]" onclick="openSessionImageModal(\'' + item.image.replace(/'/g, "\\'") + '\', \'' + item.title.replace(/'/g, "\\'") + '\')"><img src="' + item.image + '" alt="' + item.title + '" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-[11px] font-bold gap-1"><span class="material-symbols-outlined text-[15px]">zoom_in</span> View</div></div>' : '<div class="h-24 bg-[#FAF5EE] flex flex-col items-center justify-center p-2 text-center border-b border-[#E9DFD3]"><span class="text-3xl mb-1">' + item.icon + '</span><span class="text-[11px] font-bold text-[#3B1F2B]">' + item.title + '</span></div>'; return '<div class="academic-card overflow-hidden">' + visualHtml + '<div class="p-2.5"><span class="text-[9px] font-bold px-1.5 py-0.5 bg-[#FAF0E1] text-[#9C7330] rounded">' + item.sub + '</span><div class="text-xs font-bold text-[#3B1F2B] mt-1">' + item.date + '</div><div class="text-[10px] text-[#7A6870]">Grade: ' + item.grade + '</div></div></div>'; }).join(''); };</script>
+
+
+
+<script class="">function completeSetupAndLaunch() { var obState = document.getElementById('ob-state-select'); if (obState && typeof onStateChange === 'function') { onStateChange(obState.value); } var obView = document.getElementById('view-onboarding'); if (obView) { obView.classList.remove('active'); obView.style.display = 'none'; } if (typeof navigateTo === 'function') { navigateTo('calendar'); } else { var cal = document.getElementById('screen-calendar'); if (cal) cal.classList.add('active'); } }</script>
+
+<script>if (typeof App !== 'undefined') { App.schoolName = ''; App.parentName = ''; App.currentState = ''; App.children = []; App.students = {}; App.activeStudent = ''; } document.addEventListener('DOMContentLoaded', function() { if (typeof App !== 'undefined') { App.schoolName = ''; App.parentName = ''; App.currentState = ''; App.children = []; App.students = {}; App.activeStudent = ''; } });</script>
+
+<script id="onboarding-master-script">(function() { window.obStateData = { children: [ { name: 'Leo', grade: '4th Grade', subjects: ['Saxon Math 5/4', 'Natural Science & Biology', 'Language Arts & Lit', 'US History', 'Piano & Music Theory'] }, { name: 'Maya', grade: '1st Grade', subjects: ['All About Reading Level 1', 'Math-U-See Alpha', 'Nature Study & Sketching', 'Creative Arts & Crafts'] } ] }; window.renderObChildren = function() { var list = document.getElementById('ob-children-list'); var countBadge = document.getElementById('ob-roster-count'); var addBtn = document.getElementById('btn-ob-add-child'); if (!list) return; if (countBadge) countBadge.innerText = obStateData.children.length + (obStateData.children.length === 1 ? ' Child' : ' Children'); if (addBtn) addBtn.style.display = obStateData.children.length >= 4 ? 'none' : 'inline-flex'; list.innerHTML = obStateData.children.map(function(child, idx) { var subjPills = child.subjects.map(function(s, sIdx) { return '<span class="px-2 py-0.5 bg-white border border-[#E0D5C7] rounded-md text-[10px] font-bold text-[#3B1F2B] flex items-center gap-1"><span>' + s + '</span><button type="button" class="text-[#7A6870] hover:text-[#ba1a1a] font-bold" onclick="removeObSubject(' + idx + ',' + sIdx + ')">×</button></span>'; }).join(''); return '<div class="p-3 bg-[#FAF5EE] border border-[#E0D5C7] rounded-xl space-y-2">' + '<div class="flex items-center justify-between"><span class="text-xs font-extrabold text-[#3B1F2B]">Child #' + (idx + 1) + '</span>' + (obStateData.children.length > 1 ? '<button type="button" class="text-[10px] text-[#ba1a1a] font-bold hover:underline" onclick="removeObChild(' + idx + ')">Remove</button>' : '<span class="text-[9px] text-[#7A6870] font-bold">Primary</span>') + '</div>' + '<div class="grid grid-cols-2 gap-2">' + '<div><label class="block text-[9px] font-bold text-[#7A6870] mb-0.5">Name</label><input type="text" value="' + child.name + '" class="w-full p-2 bg-white border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B]" oninput="obStateData.children[' + idx + '].name = this.value"></div>' + '<div><label class="block text-[9px] font-bold text-[#7A6870] mb-0.5">Grade</label><input type="text" value="' + child.grade + '" class="w-full p-2 bg-white border border-[#E0D5C7] rounded-lg text-xs font-bold text-[#3B1F2B]" oninput="obStateData.children[' + idx + '].grade = this.value"></div>' + '</div>' + '<div class="space-y-1 pt-1">' + '<div class="flex items-center justify-between"><label class="block text-[9px] font-bold text-[#7A6870]">Assigned Subjects</label></div>' + '<div class="flex flex-wrap gap-1 mb-1.5">' + subjPills + '</div>' + '<div class="flex gap-1.5"><input id="ob-new-subj-input-' + idx + '" type="text" placeholder="Add subject (e.g. Latin, Astronomy)" class="flex-1 p-1.5 bg-white border border-[#E0D5C7] rounded-lg text-[11px] font-semibold text-[#3B1F2B] outline-none">' + '<button type="button" class="px-2.5 py-1 bg-[#3B1F2B] text-white rounded-lg text-[10px] font-bold hover:opacity-90" onclick="addObSubject(' + idx + ')">+ Add</button></div>' + '</div>' + '</div>'; }).join(''); }; window.addObChild = function() { if (obStateData.children.length >= 4) { alert('Maximum 4 children allowed.'); return; } var nextNum = obStateData.children.length + 1; obStateData.children.push({ name: 'Child ' + nextNum, grade: nextNum === 3 ? '6th Grade' : 'Kindergarten', subjects: ['Core Math', 'Language Arts', 'General Science'] }); renderObChildren(); }; window.removeObChild = function(idx) { if (obStateData.children.length <= 1) return; obStateData.children.splice(idx, 1); renderObChildren(); }; window.addObSubject = function(idx) { var input = document.getElementById('ob-new-subj-input-' + idx); if (!input || !input.value.trim()) return; obStateData.children[idx].subjects.push(input.value.trim()); input.value = ''; renderObChildren(); }; window.removeObSubject = function(childIdx, subjIdx) { obStateData.children[childIdx].subjects.splice(subjIdx, 1); renderObChildren(); }; window.openSetupFromAuth = function() { document.querySelectorAll('.screen-view').forEach(function(s) { s.classList.remove('active'); }); var ob = document.getElementById('view-onboarding'); if (ob) { ob.classList.add('active'); ob.style.display = 'block'; } renderObChildren(); }; window.quickLaunchDemoWorkspace = function() { document.getElementById('ob-school-name').value = 'Oakwood Heritage Academy'; document.getElementById('ob-parent-name').value = 'Sarah Connolly'; document.getElementById('ob-state-select').value = 'MO'; completeSetupAndLaunch(); }; window.completeSetupAndLaunch = function() { var schoolName = (document.getElementById('ob-school-name') && document.getElementById('ob-school-name').value.trim()) || 'Oakwood Heritage Academy'; var parentName = (document.getElementById('ob-parent-name') && document.getElementById('ob-parent-name').value.trim()) || 'Sarah Connolly'; var stateCode = (document.getElementById('ob-state-select') && document.getElementById('ob-state-select').value) || 'MO'; var initials = parentName.split(' ').map(function(w) { return w[0] || ''; }).join('').toUpperCase().substring(0, 2) || 'SC'; var avatarBtn = document.querySelector('header button[onclick*="profile"]'); if (avatarBtn) avatarBtn.innerText = initials; var profileAvatar = document.querySelector('#screen-profile .w-12.h-12.rounded-full'); if (profileAvatar) profileAvatar.innerText = initials; var profileSchoolInput = document.getElementById('profile-school-name-input'); if (profileSchoolInput) profileSchoolInput.value = schoolName; var profileParentInput = document.getElementById('profile-parent-name-input'); if (profileParentInput) profileParentInput.value = parentName; var profileParentSub = document.querySelector('#screen-profile h2 + p'); if (profileParentSub) profileParentSub.innerText = 'Head Educator • ' + schoolName; App.schoolName = schoolName; App.parentName = parentName; App.currentState = stateCode; var stateSel = document.getElementById('state-selector'); if (stateSel) stateSel.value = stateCode; var badgeState = document.getElementById('badge-state-abbr'); if (badgeState) badgeState.innerText = stateCode; App.students = {}; obStateData.children.forEach(function(c, i) { var cleanName = c.name.trim() || ('Student ' + (i + 1)); var subjs = c.subjects.map(function(sName, sIdx) { return { name: sName, type: (sIdx > 3 ? 'Elective' : 'Core'), hours: Math.max(30, 110 - sIdx * 15), letter: 'A (' + (96 - sIdx) + '%)', num: (96 - sIdx) + '%', pf: 'Pass' }; }); App.students[cleanName] = { name: cleanName, grade: c.grade || 'Grade Level', loggedDays: 130 + i * 10, loggedHours: 580.0 + i * 40, gpa: (3.95 - i * 0.05), subjects: subjs, sessionsByDate: { '2026-10-05': [ { short: (subjs[0] ? subjs[0].name.split(' ')[0] : 'Core'), full: (subjs[0] ? subjs[0].name : 'Core Math'), hours: '1.5h', time: '9:00 AM', color: '#3B1F2B', desc: 'Curriculum review & primary lesson practice' }, { short: (subjs[1] ? subjs[1].name.split(' ')[0] : 'Science'), full: (subjs[1] ? subjs[1].name : 'Science Lab'), hours: '2.0h', time: '11:00 AM', color: '#C89B53', desc: 'Hands-on exploration & lab notes' } ] }, portfolio: subjs.map(function(s, idx) { return { cat: (s.name.toLowerCase().includes('math') ? 'math' : (s.name.toLowerCase().includes('sci') ? 'science' : 'la')), icon: (s.name.toLowerCase().includes('math') ? '📐' : (s.name.toLowerCase().includes('sci') ? '🔬' : '✍️')), title: s.name + ' Portfolio Artifact', sub: s.name, date: 'Oct 5, 2026', grade: 'A (95%)' }; }), reading: { totalHours: (20 + i * 5) + '.0 hrs Total', books: [ { title: 'Classic Literature Study ' + (i + 1), author: 'Author Selection', progress: 'In Progress', pct: '65%', hours: (12 + i * 2) + '.5 hrs' } ] }, fieldTrips: [ { subject: (subjs[1] ? subjs[1].name : 'Natural Science'), title: 'State Science & Botanical Center', address: 'Regional Academic Site', hours: '3.0 Hrs', notes: 'Field observation aligned with state curriculum.', date: 'Oct 5, 2026' } ] }; }); var studentKeys = Object.keys(App.students); App.activeStudent = studentKeys[0]; var globalSelect = document.getElementById('global-student-select'); if (globalSelect) { globalSelect.innerHTML = studentKeys.map(function(k) { return '<option value="' + k + '"' + (k === App.activeStudent ? ' selected' : '') + '>' + k + '</option>'; }).join(''); } var cameraStudentSelect = document.getElementById('camera-student-select'); if (cameraStudentSelect) { cameraStudentSelect.innerHTML = studentKeys.map(function(k) { return '<option value="' + k + '">' + k + '</option>'; }).join(''); } window.syncPortfolioFilterTabs = function() { var bar = document.getElementById('portfolio-filter-bar'); var stu = App.students[App.activeStudent]; if (!bar || !stu) return; var chips = '<button class="port-filter-btn px-3 py-1 rounded-full bg-[#3B1F2B] text-white shadow-sm whitespace-nowrap" onclick="filterPortfolio(\'all\', this)">All Subjects</button>'; stu.subjects.forEach(function(s) { var catKey = s.name.toLowerCase().includes('math') ? 'math' : (s.name.toLowerCase().includes('sci') ? 'science' : (s.name.toLowerCase().includes('art') ? 'art' : 'la')); chips += '<button class="port-filter-btn px-3 py-1 rounded-full bg-[#FFFDF9] border border-[#E0D5C7] text-[#7A6870] whitespace-nowrap hover:bg-[#FAF0E1]" onclick="filterPortfolio(\'' + catKey + '\', this)">' + s.name + '</button>'; }); bar.innerHTML = chips; }; var origSwitch = window.switchStudent; window.switchStudent = function(name) { App.activeStudent = name; if (globalSelect) globalSelect.value = name; if (cameraStudentSelect) cameraStudentSelect.value = name; syncPortfolioFilterTabs(); renderProfileTabs(); renderChildrenCards(); renderAll(); }; var origRenderAll = window.renderAll; window.renderAll = function() { if (typeof syncPortfolioFilterTabs === 'function') syncPortfolioFilterTabs(); if (typeof origRenderAll === 'function') origRenderAll(); var repSub = document.getElementById('report-card-sub'); var currStu = App.students[App.activeStudent]; if (repSub && currStu) repSub.innerText = App.schoolName + ' • ' + currStu.name + ' (' + currStu.grade + ')'; }; syncPortfolioFilterTabs(); renderProfileTabs(); renderChildrenCards(); renderAll(); var obView = document.getElementById('view-onboarding'); if (obView) { obView.classList.remove('active'); obView.style.display = 'none'; } var authGate = document.getElementById('screen-auth-gate'); if (authGate) { authGate.classList.remove('active'); authGate.style.display = 'none'; } navigateTo('calendar'); }; window.submitEmailAuth = function() { var emailInput = document.getElementById('auth-email-input'); var passInput = document.getElementById('auth-password-input'); if (emailInput && !emailInput.value) emailInput.value = 'sarah.connolly@oakwoodheritage.org'; if (passInput && !passInput.value) passInput.value = '••••••••••••'; openSetupFromAuth(); }; window.completeAuthWithProvider = function(p) { openSetupFromAuth(); }; renderObChildren(); })();</script>
+
+<script id="app-lifecycle-engine" class="">(function() { window.appLifecycleState = { currentStage: 1, isAuthenticated: false, hasCompletedOnboarding: false }; window.enforceAppLifecycle = function() { var stage = window.appLifecycleState.currentStage; var isAuth = window.appLifecycleState.isAuthenticated; var hasOb = window.appLifecycleState.hasCompletedOnboarding; var header = document.getElementById('main-top-header') || document.querySelector('header'); var sideDrawer = document.getElementById('side-drawer'); var drawerBackdrop = document.getElementById('drawer-backdrop'); if (sideDrawer) sideDrawer.classList.add('-translate-x-full'); if (drawerBackdrop) drawerBackdrop.classList.add('hidden'); document.querySelectorAll('.screen-view').forEach(function(s) { s.classList.remove('active'); s.style.display = 'none'; }); if (!isAuth || stage === 1) { window.appLifecycleState.currentStage = 1; if (header) header.classList.add('hidden'); var gate = document.getElementById('screen-auth-gate'); if (gate) { gate.classList.add('active'); gate.style.display = 'block'; } return; } if (!hasOb || stage === 2) { window.appLifecycleState.currentStage = 2; if (header) header.classList.add('hidden'); var ob = document.getElementById('view-onboarding'); if (ob) { ob.classList.add('active'); ob.style.display = 'block'; } if (typeof window.renderObChildren === 'function') { window.renderObChildren(); } return; } window.appLifecycleState.currentStage = 3; if (header) header.classList.remove('hidden'); var cal = document.getElementById('screen-calendar'); if (cal) { cal.classList.add('active'); cal.style.display = 'block'; } }; window.advanceToStage2 = function() { window.appLifecycleState.isAuthenticated = true; window.appLifecycleState.currentStage = 2; var emailInput = document.getElementById('auth-email-input'); var passInput = document.getElementById('auth-password-input'); if (emailInput && !emailInput.value) emailInput.value = 'sarah.connolly@oakwoodheritage.org'; if (passInput && !passInput.value) passInput.value = '••••••••••••'; window.enforceAppLifecycle(); }; window.submitEmailAuth = function() { window.advanceToStage2(); }; window.completeAuthWithProvider = function() { window.advanceToStage2(); }; window.openSetupFromAuth = function() { window.advanceToStage2(); }; var prevNav = window.navigateTo; window.navigateTo = function(screenId) { if (window.appLifecycleState.currentStage < 3) { window.enforceAppLifecycle(); return; } if (typeof prevNav === 'function') { prevNav(screenId); } else { document.querySelectorAll('.screen-view').forEach(function(s) { s.classList.remove('active'); s.style.display = 'none'; }); var target = document.getElementById('screen-' + screenId); if (target) { target.classList.add('active'); target.style.display = 'block'; } } }; var prevCompleteSetup = window.completeSetupAndLaunch; window.completeSetupAndLaunch = function() { window.appLifecycleState.isAuthenticated = true; window.appLifecycleState.hasCompletedOnboarding = true; window.appLifecycleState.currentStage = 3; if (typeof prevCompleteSetup === 'function') { prevCompleteSetup(); } window.enforceAppLifecycle(); }; window.quickLaunchDemoWorkspace = function() { var sName = document.getElementById('ob-school-name'); var pName = document.getElementById('ob-parent-name'); var stSel = document.getElementById('ob-state-select'); if (sName) sName.value = 'Oakwood Heritage Academy'; if (pName) pName.value = 'Sarah Connolly'; if (stSel) stSel.value = 'MO'; window.completeSetupAndLaunch(); }; window.enforceAppLifecycle(); })();</script><script id="auth-session-manager-script">
+(function() {
+  window.currentAuthMode = 'signup';
+
+  window.switchAuthMode = function(mode) {
+    window.currentAuthMode = mode;
+    var btnSignup = document.getElementById('btn-auth-signup');
+    var btnSignin = document.getElementById('btn-auth-signin');
+    var submitText = document.getElementById('auth-submit-text');
+    var termsWrap = document.getElementById('auth-terms-wrapper');
+    var forgotLink = document.getElementById('auth-forgot-link');
+
+    if (mode === 'signin') {
+      if (btnSignup) {
+        btnSignup.className = 'py-2 rounded-lg text-[#7A6870] hover:text-[#3B1F2B] transition text-center text-[11px]';
+      }
+      if (btnSignin) {
+        btnSignin.className = 'py-2 rounded-lg bg-[#3B1F2B] text-white shadow-sm transition text-center text-[11px]';
+      }
+      if (submitText) submitText.innerText = 'Unlock Encrypted Vault';
+      if (termsWrap) termsWrap.classList.add('hidden');
+      if (forgotLink) forgotLink.classList.remove('hidden');
+    } else {
+      if (btnSignup) {
+        btnSignup.className = 'py-2 rounded-lg bg-[#3B1F2B] text-white shadow-sm transition text-center text-[11px]';
+      }
+      if (btnSignin) {
+        btnSignin.className = 'py-2 rounded-lg text-[#7A6870] hover:text-[#3B1F2B] transition text-center text-[11px]';
+      }
+      if (submitText) submitText.innerText = 'Create Encrypted Vault';
+      if (termsWrap) termsWrap.classList.remove('hidden');
+      if (forgotLink) forgotLink.classList.add('hidden');
+    }
+  };
+
+  function restoreVaultAndEnterWorkspace() {
+    if (typeof window.quickLaunchDemoWorkspace === 'function') {
+      window.quickLaunchDemoWorkspace();
+    } else if (typeof window.completeSetupAndLaunch === 'function') {
+      window.completeSetupAndLaunch();
+    }
+    window.appLifecycleState.isAuthenticated = true;
+    window.appLifecycleState.hasCompletedOnboarding = true;
+    window.appLifecycleState.currentStage = 3;
+    localStorage.setItem('trackly_vault_session', JSON.stringify({ authenticated: true, hasCompletedOnboarding: true, timestamp: Date.now() }));
+    window.enforceAppLifecycle();
+    if (typeof navigateTo === 'function') navigateTo('calendar');
+  }
+
+  window.submitEmailAuth = function() {
+    var emailInput = document.getElementById('auth-email-input');
+    var passInput = document.getElementById('auth-password-input');
+    if (emailInput && !emailInput.value) emailInput.value = 'sarah.connolly@oakwoodheritage.org';
+    if (passInput && !passInput.value) passInput.value = '••••••••••••';
+
+    if (window.currentAuthMode === 'signin') {
+      restoreVaultAndEnterWorkspace();
+    } else {
+      window.advanceToStage2();
+    }
+  };
+
+  window.completeAuthWithProvider = function(p) {
+    var emailInput = document.getElementById('auth-email-input');
+    var passInput = document.getElementById('auth-password-input');
+    if (emailInput && !emailInput.value) emailInput.value = 'sarah.connolly@oakwoodheritage.org';
+    if (passInput && !passInput.value) passInput.value = '••••••••••••';
+
+    if (window.currentAuthMode === 'signin') {
+      restoreVaultAndEnterWorkspace();
+    } else {
+      window.advanceToStage2();
+    }
+  };
+
+  var prevComplete = window.completeSetupAndLaunch;
+  window.completeSetupAndLaunch = function() {
+    if (typeof prevComplete === 'function') {
+      prevComplete();
+    }
+    localStorage.setItem('trackly_vault_session', JSON.stringify({ authenticated: true, hasCompletedOnboarding: true, timestamp: Date.now() }));
+  };
+
+  window.handleLockVaultSignOut = function() {
+    localStorage.removeItem('trackly_vault_session');
+    window.appLifecycleState.isAuthenticated = false;
+    window.appLifecycleState.hasCompletedOnboarding = false;
+    window.appLifecycleState.currentStage = 1;
+    var header = document.getElementById('main-top-header') || document.querySelector('header');
+    if (header) header.classList.add('hidden');
+    document.querySelectorAll('.screen-view').forEach(function(s) { s.classList.remove('active'); s.style.display = 'none'; });
+    var gate = document.getElementById('screen-auth-gate');
+    if (gate) { gate.classList.add('active'); gate.style.display = 'block'; }
+    window.switchAuthMode('signin');
+  };
+
+  try {
+    var savedSession = localStorage.getItem('trackly_vault_session');
+    if (savedSession) {
+      var parsed = JSON.parse(savedSession);
+      if (parsed && parsed.authenticated) {
+        setTimeout(function() {
+          restoreVaultAndEnterWorkspace();
+        }, 50);
+      }
+    }
+  } catch(e) {}
+})();
+</script></body></html>
